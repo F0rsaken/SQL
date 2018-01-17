@@ -1,5 +1,5 @@
 <div id = "grafika" style = "text-align:center; width:400px; height:550px; margin:auto;">
-![agh_nzw_s_pl_3w_wbr_rgb_150ppi.jpg](C:\Users\mike\Documents\SQLProject\agh_nzw_s_pl_3w_wbr_rgb_150ppi.jpg)
+<!-- ![agh_nzw_s_pl_3w_wbr_rgb_150ppi.jpg](C:\Users\mike\Documents\SQLProject\agh_nzw_s_pl_3w_wbr_rgb_150ppi.jpg) -->
 </div>
 <h1 style = "text-align:center">Laboratorium Podstaw Baz Danych <br/>Dokumentacja Systemu zarządzania konferencjami</h1>
 <h3 style = "text-align:right">Miłosz Mandowski <br/>Michał Śledź</h3>
@@ -16,7 +16,7 @@ identyfikator imienny (+ ew. informacja o firmie na nim). Dla konferencji kilkud
 uczestnicy mogą rejestrować się na dowolne z tych dni.
 
 #Schemat bazy danych
-![Entity Relationship Diagram1.png](C:\Users\mike\Documents\SQLProject\Entity Relationship Diagram1.png)
+<!-- ![Entity Relationship Diagram1.png](C:\Users\mike\Documents\SQLProject\Entity Relationship Diagram1.png) -->
 
 
 #Tabele
