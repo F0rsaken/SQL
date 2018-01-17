@@ -63,6 +63,12 @@ CREATE TABLE Conferences (
 	Discount float(4) NOT NULL DEFAULT 0 CHECK (Discount <= 1),
 	PRIMARY KEY (ConferenceID));
 ```
+<h6>ClientReservations - przechowuje informacje o rezerwacji klienta na daną konferencję. Zawiera pola:
+* ClientReservationID - identyfikator rezerwacji, unikatowy, zaczyna się od 1, inkrementowany o 1
+* ConferenceID - identyfikator konferencji
+* ClientID - identyfikator klienta
+* ReservationDate - data dokonania rezerwacji
+</h6>
 ```sql
 CREATE TABLE ClientReservations (
 	ClientReservationID int IDENTITY(1,1) NOT NULL,
@@ -71,9 +77,13 @@ CREATE TABLE ClientReservations (
 	ReservationDate date NOT NULL DEFAULT Convert(date, getdate()),
 	PRIMARY KEY (ClientReservationID));
 ```
-
-
-
+<h6>DaysReservations - przechowuje informacje o rezerwacjach klientów na konkretne dni konferencji. Zawiera pola:
+* DayReservationID - identyfikator rezerwacji na dany dzień, unikatowy, zaczyna się od 1, inkrementowany o 1
+* ClientReservationID - identyfikator klienta 
+* ConferenceDay - nr dnia, na który dokonano rezerwacji
+* NormalReservations - ilość zarezerwowwanych normalnych miejsc, musi być większa od zera
+* StudentsReservations - ilość zarezerwowanych studenckich miejsc, domyślnie równa zero
+</h6>
 ```sql
 CREATE TABLE DaysReservations (
 	DayReservationID int IDENTITY(1,1) NOT NULL,
@@ -83,6 +93,13 @@ CREATE TABLE DaysReservations (
 	StudentsReservations int NOT NULL DEFAULT 0,
 	PRIMARY KEY (DayReservationID));
 ```
+<h6>ParticipantReservations - przechowuje informacje o zapisach uczestników na dany dzień konferencji. Zawiera pola:
+* ParticipantReservationID - identyfikator rezerwacji uczestnika, unikatowy, zaczyna się od 1, inkrementowany o 1
+* ParticipantID - identyfikator uczestnika
+* DayReservationID - identyfikator rezerwacji klienta na dany dzień
+* StudentCard - nr legitymacji studenckiej, równy ```null``` jeżeli uczestnik nie jest studentem
+* StudentCardDate - ważność legitymacji studenckiej, równa ```null``` jeżeli uczestnik nie jest studentem
+</h6>
 ```sql
 CREATE TABLE ParticipantReservations (
 	ParticipantReservationID int IDENTITY(1,1) NOT NULL,
@@ -92,6 +109,16 @@ CREATE TABLE ParticipantReservations (
 	StudentCardDate date NULL,
 	PRIMARY KEY (ParticipantReservationID));
 ```
+<h6>Participants - przechowuje informacje o uczestnikach konferencji. Zawiera pola:
+* ParticipantID - identyfikator uczestnika, unikatowy, zaczyna się od 1, inkrementowany o 1
+* Name - imię uczestnika
+* Surname - nazwisko uczestnika
+* PhoneNumber - nr telefonu, musi posiadać 9 cyfr, pierwsza musi być różna od zera
+* Email - adres email 
+* City - miasto
+* Country - państwo
+* DiscountGranted - informuje czy uczestnikowi przysługuje zniżka studencka, wartość bitowa, domyślnie nie przysługuje ```potrzebne nam????```
+</h6>
 ```sql
 CREATE TABLE Participants (
 	ParticipantID int IDENTITY(1,1) NOT NULL,
@@ -104,6 +131,11 @@ CREATE TABLE Participants (
 	DiscountGranted bit NOT NULL DEFAULT 0,
 	PRIMARY KEY (ParticipantID));
 ```
+<h6>ParticipantWorkshops - przechowuje informacje o zapisach uczestników na warsztaty. Zawiera pola:
+* WorkshopReservationID - identyfikator rezerwacji na warsztat, unikatowy, zaczyna się od 1, inkrementowany o 1
+* ParticipantReservationID - identyfikator rezerwacji uczestnika na dany dzień konferencji
+* WorkshopID - identyfikator warsztatu
+</h6>
 ```sql
 CREATE TABLE ParticipantWorkshops (
 	WorkshopReservationID int IDENTITY(1,1) NOT NULL,
@@ -111,6 +143,12 @@ CREATE TABLE ParticipantWorkshops (
 	WorkshopID int NOT NULL,
 	PRIMARY KEY (WorkshopReservationID));
 ```
+<h6>Payments - przechowuje informacje o opłatach nałożonych na klientów, za dokonane rezerwacje miejsc na konferencje i warsztaty. Zawiera pola:
+* PaymentID - identyfikator opłaty, unikatowy zaczyna się od 1, inkrementowany o 1 
+* FineAssessed - należna opłata za rezerwacje miejsc na konferencję i warsztaty
+* FinePaid - kwota zapłacona do tej pory
+* DueDate - czas, do którego należy dokonać opłaty
+</h6>
 ```sql
 CREATE TABLE Payments (
 	PaymentID int IDENTITY(1,1) NOT NULL,
@@ -119,6 +157,12 @@ CREATE TABLE Payments (
 	DueDate date NOT NULL,
 	PRIMARY KEY (PaymentID));
 ```
+<h6>PriceList - przechowuje informacje o cenach za rezerwacje na konferencję w zależności od daty dokonania rezerwacji. Zawiera pola:
+* PriceID - identyfikator opłaty
+* ConferenceID - identyfikator konferencji
+* PriceValue - cena za rezerwację
+* PriceDate - data, do której obowiązuje dana cena
+</h6>
 ```sql
 CREATE TABLE PriceList (
 	PriceID int IDENTITY(1,1) NOT NULL,
@@ -127,6 +171,16 @@ CREATE TABLE PriceList (
 	PriceDate date NOT NULL,
 	PRIMARY KEY (PriceID));
 ```
+<h6>Workshops - przechowuje informacje o warsztatach. Zawiera pola:
+* WorkshopID - identyfikator warsztatu, unikatowy, zaczyna się od 1, inkrementowany o 1
+* ConferenceID - identyfikator konferencji
+* ConferenceDay - nr dnia konferencji, na który przypada warsztat
+* WorkshopName - temat/nazwa warsztatu
+* Places - ilość dostępnych miejsc
+* WorkshopFee - wysokość opłaty należnej za wstęp na warsztat
+* WorkshopStart - czas rozpoczęcia warsztatu
+* WorkshopEnd - czas zakończenia warsztatu
+</h6>
 ```sql
 CREATE TABLE Workshops (
 	WorkshopID int IDENTITY(1,1) NOT NULL,
@@ -139,6 +193,12 @@ CREATE TABLE Workshops (
 	WorkshopEnd time NOT NULL,
 	PRIMARY KEY (WorkshopID));
 ```
+<h6>WorkshopsReservations - przechowuje infomacje o rezerwacjach miejsc na warsztaty przez klientó. Zawiera pola:
+* WorkshopReservationID - identyfikator rezerwacji na warsztat, unikatowy, zaczyna się od 1, inkrementowany o 1
+* DayReservationID - identyfikator rezerwacji klienta na dany dzień
+* WorkshopID - identyfikator warsztatu
+* NormalReservations - ilość zarezerwowanych miejsc. Musi być większa od zera
+</h6>
 ```sql
 CREATE TABLE WorkshopsReservations (
 	WorkshopReservationID int IDENTITY(1,1) NOT NULL,
@@ -147,6 +207,7 @@ CREATE TABLE WorkshopsReservations (
 	NormalReservations int NOT NULL CHECK (NormalReservations > 0),
 	PRIMARY KEY (WorkshopReservationID));
 ```
+
 ```sql
 -- =========================================
 -- Creating Keys
