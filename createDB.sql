@@ -53,7 +53,6 @@ CREATE TABLE Participants (
 	Email varchar(50) NOT NULL,
 	City varchar(50) NOT NULL,
 	Country varchar(50) NOT NULL,
-	DiscountGranted bit NOT NULL,
 	PRIMARY KEY (ParticipantID));
 
 CREATE TABLE ParticipantWorkshops (
