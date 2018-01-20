@@ -27,22 +27,29 @@ ROLE:
 1. Triggery
 
 2. Widoki
-	-system
+	-system (pani Ania)
 		- lista warsztatów w zaleźności od konferencji
 		- widok identyfikatora
 		- widok aktualnej stawki cenowej za rezerwacje konferencji ?
+		- lista klientów na konferecje, którzy jeszcze nie zajeli wszystkich miejsc
+		- nieopłacone rezerwacje w terminie
+		- nieopłacone rezerwacje, które są jeszcze aktywne
+		- nadpłacone rezerwacje
+		- opłacone rezerwacje
 	- klient
 		- wszystkie opłaty
 		- opłaty nieopłacone
 		- rezerwacje
 	- uczestnik
 		- rezerwacje
-	- organizator
-		- ilość miejsc dla konferencji
+	- organizator ?
 		- lista uczestników na każdy dzień konferencji
 		- lista uczestników na każdy warsztat
+		- każdy dzień konferencji z liczbą wolnych i zarezerwowanych miejsc
+		- lista warsztatów z liczbą wolnych i zarezerwowanych miejsc
 		- opłaty klienta
 		- select klientów, posegregowanych po najczęściaj korzystających
+		- select klientów, posegregowanych po tych, którzy najwięcej zapłacili
 
 3. Procedury
 	- sprawdzanie, czy wpłyneła opłata od klienta

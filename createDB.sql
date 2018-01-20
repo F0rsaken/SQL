@@ -16,7 +16,7 @@ CREATE TABLE Clients (
 	ClientSurname varchar(50) NULL,
 	IsPrivate bit NOT NULL DEFAULT 0,
 	PhoneNumber int NOT NULL CHECK (PhoneNumber like '[1-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'),
-	Email varchar(50) NOT NULL,
+	Email varchar(50) NOT NULL CHECK (Email like '_%[@]_%'),
 	Address varchar(50) NOT NULL,
 	City varchar(50) NOT NULL,
 	PostalCode int NOT NULL,
@@ -29,13 +29,13 @@ CREATE TABLE Conferences (
 	StartDate date NOT NULL,
 	EndDate date NOT NULL,
 	Places int NOT NULL CHECK (Places > 0),
-	Discount float(4) NOT NULL DEFAULT 0 CHECK (Discount <= 1),
+	Discount float(10) NOT NULL DEFAULT 0 CHECK (Discount <= 1),
 	PRIMARY KEY (ConferenceID));
 
 CREATE TABLE DaysReservations (
 	DayReservationID int IDENTITY(1,1) NOT NULL,
-	ClientReservationID int NOT NULL, 
-	ConferenceDay int NOT NULL,
+	ClientReservationID int NOT NULL,
+	ConferenceDay int NOT NULL CHECK (ConferenceDay > 0),
 	NormalReservations int NOT NULL CHECK (NormalReservations > 0),
 	StudentsReservations int NOT NULL DEFAULT 0,
 	IsCancelled bit NOT NULL DEFAULT 0,
@@ -55,10 +55,9 @@ CREATE TABLE Participants (
 	Name varchar(50) NOT NULL,
 	Surname varchar(50) NOT NULL,
 	PhoneNumber int NOT NULL CHECK (PhoneNumber like '[1-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'),
-	Email varchar(50) NOT NULL,
+	Email varchar(50) NOT NULL CHECK (Email like '_%[@]_%'),
 	City varchar(50) NOT NULL,
 	Country varchar(50) NOT NULL,
-	DiscountGranted bit NOT NULL DEFAULT 0,
 	PRIMARY KEY (ParticipantID));
 
 CREATE TABLE ParticipantWorkshops (
@@ -70,9 +69,9 @@ CREATE TABLE ParticipantWorkshops (
 
 CREATE TABLE Payments (
 	PaymentID int IDENTITY(1,1) NOT NULL,
-	FineAssessed money NOT NULL,
+	FineAssessed money NOT NULL DEFAULT 0,
 	FinePaid money NOT NULL DEFAULT 0,
-	DueDate date NOT NULL,
+	DueDate date NOT NULL DATEADD( day, 7, Convert(date, getdate())),
 	PRIMARY KEY (PaymentID));
 
 CREATE TABLE PriceList (
