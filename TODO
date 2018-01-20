@@ -28,10 +28,6 @@ ROLE:
 
 2. Widoki
 	-system (pani Ania)
-		- lista warsztatów w zaleźności od konferencji
-		- widok identyfikatora
-		- widok aktualnej stawki cenowej za rezerwacje konferencji ?
-		- lista klientów na konferecje, którzy jeszcze nie zajeli wszystkich miejsc
 		- nieopłacone rezerwacje w terminie
 		- nieopłacone rezerwacje, które są jeszcze aktywne
 		- nadpłacone rezerwacje
@@ -54,8 +50,14 @@ ROLE:
 3. Procedury
 	- sprawdzanie, czy wpłyneła opłata od klienta
 	- wyliczenie opłaty za rezerwacje konferencji
-4. Funkcje
 
+4. Funkcje
+	- lista warsztatów w zależności od konferencji
+	- tworzenie identyfikatorów
+	- lista uczestników na konferencje
+	- stawki cenowe za konferencje
+	- cena za konferencje od daty
+	- lista klientów na konferecje, którzy jeszcze nie zajeli wszystkich miejsc
 5. Indeksy
 	- clients
 	- participants
