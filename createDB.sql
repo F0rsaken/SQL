@@ -2,6 +2,7 @@ CREATE TABLE ClientReservations (
 	ClientReservationID int IDENTITY NOT NULL,
 	ConferenceID int NOT NULL, ClientID int NOT NULL,
 	ReservationDate date NOT NULL,
+	IsCancelled bit NOT NULL DEFAULT 0,
 	PRIMARY KEY (ClientReservationID));
 
 CREATE TABLE Clients (
@@ -32,6 +33,7 @@ CREATE TABLE DaysReservations (
 	ConferenceDay int NOT NULL,
 	NormalReservations int NOT NULL,
 	StudentsReservations int NOT NULL,
+	IsCancelled bit NOT NULL DEFAULT 0,
 	PRIMARY KEY (DayReservationID));
 
 CREATE TABLE ParticipantReservations (
@@ -40,6 +42,7 @@ CREATE TABLE ParticipantReservations (
 	DayReservationID int NOT NULL,
 	StudentCard int NULL,
 	StudentCardDate date NULL,
+	IsCancelled bit NOT NULL DEFAULT 0,
 	PRIMARY KEY (ParticipantReservationID));
 
 CREATE TABLE Participants (
@@ -57,6 +60,7 @@ CREATE TABLE ParticipantWorkshops (
 	WorkshopReservationID int IDENTITY NOT NULL,
 	ParticipantReservationID int NOT NULL,
 	WorkshopID int NOT NULL,
+	IsCancelled bit NOT NULL DEFAULT 0,
 	PRIMARY KEY (WorkshopReservationID));
 
 CREATE TABLE Payments (
@@ -89,6 +93,7 @@ CREATE TABLE WorkshopsReservations (
 	DayReservationID int NOT NULL,
 	WorkshopID int NOT NULL,
 	NormalReservations int NOT NULL,
+	IsCancelled bit NOT NULL DEFAULT 0,
 	PRIMARY KEY (WorkshopReservationID));
 
 
