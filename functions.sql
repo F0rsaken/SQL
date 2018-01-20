@@ -123,3 +123,92 @@ GO
 --     FROM ClientReservations
 --     JOIN Clients c
 --     ON
+
+--lista uczestników na każdy dzień konferencji
+
+CREATE FUNCTION F_ParticipantsListForConferenceDay
+	(
+		@ConferenceID int,
+		@ConferenceDay int
+	)
+	RETURNS TABLE
+AS
+	RETURN
+		SELECT c.ConferenceName, dr.ConferenceDay, p.*
+		FROM Participants AS p
+		INNER JOIN ParticipantReservations as pr 
+				ON p.ParticipantID = pr.ParticipantID
+		INNER JOIN DaysReservations AS dr
+				ON pr.DayReservationID = dr.DayReservationID
+		INNER JOIN ClientReservations AS cr 
+				ON cr.ClientReservationID = dr.ClientReservationID
+		INNER JOIN Conferences AS c 
+				ON cr.ConferenceID = c.ConferenceID
+		WHERE c.ConferenceID = @ConferenceID 
+				AND dr.ConferenceDay = @ConferenceDay
+				AND pr.IsCancelled = 0
+GO
+
+-- lista uczestników na każdy warsztat
+CREATE FUNCTION F_ParticipantsListForWorkshop
+	(
+		@WorkshopID int
+	)
+	RETURNS TABLE
+AS
+	RETURN
+		SELECT w.WorkshopID, w.WorkshopName, p.*
+		FROM Participants AS p
+		INNER JOIN ParticipantReservations AS pr
+				ON p.ParticipantID = pr.ParticipantID
+		INNER JOIN ParticipantWorkshops AS pw
+				ON pr.ParticipantReservationID = pw.ParticipantReservationID
+		INNER JOIN Workshops AS w 
+				ON w.WorkshopID = pw.WorkshopID
+		WHERE w.WorkshopID = @WorkshopID 
+				AND pw.IsCancelled = 0
+GO
+
+-- każdy dzień konferencji z liczbą wolnych i zarezerwowanych miejsc
+CREATE FUNCTION F_FreeAndReservedPlacesForConference
+	(
+		@ConferenceID  int
+	)
+	RETURNS TABLE
+AS
+	RETURN
+		SELECT c.ConferenceName,
+			   dr.ConferenceDay,
+			   c.Places,
+			   c.Places - SUM(dr.NormalReservations + dr.StudentsReservations) AS FreePlaces,
+			   SUM(dr.NormalReservations + dr.StudentsReservations) AS ReservedPlaces
+			   
+		FROM Conferences AS c
+		INNER JOIN  ClientReservations AS cr
+				ON c.ConferenceID = cr.ConferenceID
+		INNER JOIN DaysReservations AS dr
+				ON cr.ClientReservationID = dr.ClientReservationID
+		WHERE c.ConferenceID = @ConferenceID
+				AND dr.IsCancelled = 0
+		GROUP BY dr.ConferenceDay, c.Places, c.ConferenceName
+GO
+
+-- lista warsztatów z liczbą wolnych i zarezerwowanych miejsc
+CREATE FUNCTION F_FreeAndReservedPlacesForWorkshop
+	(
+		@WorkshopID  int
+	)
+	RETURNS TABLE
+AS
+	RETURN
+		SELECT w.WorkshopID,
+			   w.WorkshopName,
+			   w.Places,
+			   SUM(wr.NormalReservations) AS ReservedPlaces
+		FROM Workshops AS w
+		INNER JOIN WorkshopsReservations AS wr
+				ON w.WorkshopID = wr.WorkshopID
+		WHERE wr.IsCancelled = 0
+		AND w.WorkshopID = @WorkshopID
+		GROUP BY w.WorkshopID, w.Places, w.WorkshopName
+GO
