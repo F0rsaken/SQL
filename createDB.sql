@@ -71,7 +71,7 @@ CREATE TABLE Payments (
 	PaymentID int IDENTITY(1,1) NOT NULL,
 	FineAssessed money NOT NULL DEFAULT 0,
 	FinePaid money NOT NULL DEFAULT 0,
-	DueDate date NOT NULL DATEADD( day, 7, Convert(date, getdate())),
+	DueDate date NOT NULL DEFAULT DATEADD( day, 7, Convert(date, getdate())),
 	PRIMARY KEY (PaymentID));
 
 CREATE TABLE PriceList (
