@@ -1,6 +1,7 @@
 CREATE TABLE ClientReservations (
 	ClientReservationID int IDENTITY NOT NULL,
-	ConferenceID int NOT NULL, ClientID int NOT NULL,
+	ConferenceID int NOT NULL,
+	ClientID int NOT NULL,
 	ReservationDate date NOT NULL,
 	IsCancelled bit NOT NULL DEFAULT 0,
 	PRIMARY KEY (ClientReservationID));
@@ -25,6 +26,7 @@ CREATE TABLE Conferences (
 	StartDate date NOT NULL,
 	EndDate date NOT NULL,
 	Dicount float(10) NOT NULL,
+	Places int NOT NULL CHECK (Places > 0),
 	PRIMARY KEY (ConferenceID));
 
 CREATE TABLE DaysReservations (

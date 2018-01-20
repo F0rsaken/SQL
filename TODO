@@ -1,12 +1,55 @@
+ROLE:
+	- pani Ania (pracownik)
+		- to co klient i uczestnik
+		- dodanie konferencji
+		- dodanie ceny
+		- usuwanie ceny (i pani Ani)
+		- dodawanie warsztatów
+
+	- klient
+		- dodawanie siebie samego
+		- rezerwacja na konferencje
+		- rezerwacja na dni konferencji
+		- rezerwacja na warsztaty konferencji
+		- anulowanie rezerwacji na konferencje
+		- anulowanie rezerwacji na dni konferencji
+		- anulowanie rezerwacji na warsztaty konferencji
+		- update ilości miejsc na dzień
+		- update ilości miejsc na warsztaty
+		- dodanie uczestnika
+ 
+	- uczestnik
+		- rejestracja na dzień
+		- rejestracja na warsztat
+		- anulowanie rejestracji na dzień
+		- anulowanie rejestracji na warsztat
+
 1. Triggery
 
 2. Widoki
+	-system
+		- lista warsztatów w zaleźności od konferencji
+		- widok identyfikatora
+		- widok aktualnej stawki cenowej za rezerwacje konferencji ?
+	- klient
+		- wszystkie opłaty
+		- opłaty nieopłacone
+		- rezerwacje
+	- uczestnik
+		- rezerwacje
+	- organizator
+		- ilość miejsc dla konferencji
+		- lista uczestników na każdy dzień konferencji
+		- lista uczestników na każdy warsztat
+		- opłaty klienta
+		- select klientów, posegregowanych po najczęściaj korzystających
 
 3. Procedury
-
+	- sprawdzanie, czy wpłyneła opłata od klienta
+	- wyliczenie opłaty za rezerwacje konferencji
 4. Funkcje
 
 5. Indeksy
 	- clients
 	- participants
-	
+
