@@ -3,18 +3,10 @@
 -- =========================================
 
 CREATE TABLE ClientReservations (
-<<<<<<< HEAD
-	ClientReservationID int IDENTITY NOT NULL,
-	ConferenceID int NOT NULL,
-	ClientID int NOT NULL,
-	ReservationDate date NOT NULL,
-	IsCancelled bit NOT NULL DEFAULT 0,
-=======
 	ClientReservationID int IDENTITY(1,1) NOT NULL,
 	ConferenceID int NOT NULL,
 	ClientID int NOT NULL,
 	ReservationDate date NOT NULL DEFAULT Convert(date, getdate()),
->>>>>>> d36ba0ac720f89d35b382bd76aca30a8069fdff8
 	PRIMARY KEY (ClientReservationID));
 
 CREATE TABLE Clients (
@@ -35,12 +27,7 @@ CREATE TABLE Conferences (
 	ConferenceName varchar(50) NOT NULL,
 	StartDate date NOT NULL,
 	EndDate date NOT NULL,
-<<<<<<< HEAD
-	Dicount float(10) NOT NULL,
-	Places int NOT NULL CHECK (Places > 0),
-=======
 	Discount float(4) NOT NULL DEFAULT 0 CHECK (Discount <= 1),
->>>>>>> d36ba0ac720f89d35b382bd76aca30a8069fdff8
 	PRIMARY KEY (ConferenceID));
 
 CREATE TABLE DaysReservations (
