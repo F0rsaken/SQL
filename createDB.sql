@@ -3,18 +3,11 @@
 -- =========================================
 
 CREATE TABLE ClientReservations (
-<<<<<<< HEAD
-	ClientReservationID int IDENTITY NOT NULL,
-	ConferenceID int NOT NULL,
-	ClientID int NOT NULL,
-	ReservationDate date NOT NULL,
-	IsCancelled bit NOT NULL DEFAULT 0,
-=======
 	ClientReservationID int IDENTITY(1,1) NOT NULL,
 	ConferenceID int NOT NULL,
 	ClientID int NOT NULL,
 	ReservationDate date NOT NULL DEFAULT Convert(date, getdate()),
->>>>>>> d36ba0ac720f89d35b382bd76aca30a8069fdff8
+	IsCancelled bit NOT NULL DEFAULT 0,
 	PRIMARY KEY (ClientReservationID));
 
 CREATE TABLE Clients (
@@ -35,12 +28,8 @@ CREATE TABLE Conferences (
 	ConferenceName varchar(50) NOT NULL,
 	StartDate date NOT NULL,
 	EndDate date NOT NULL,
-<<<<<<< HEAD
-	Dicount float(10) NOT NULL,
 	Places int NOT NULL CHECK (Places > 0),
-=======
 	Discount float(4) NOT NULL DEFAULT 0 CHECK (Discount <= 1),
->>>>>>> d36ba0ac720f89d35b382bd76aca30a8069fdff8
 	PRIMARY KEY (ConferenceID));
 
 CREATE TABLE DaysReservations (
@@ -49,6 +38,7 @@ CREATE TABLE DaysReservations (
 	ConferenceDay int NOT NULL,
 	NormalReservations int NOT NULL CHECK (NormalReservations > 0),
 	StudentsReservations int NOT NULL DEFAULT 0,
+	IsCancelled bit NOT NULL DEFAULT 0,
 	PRIMARY KEY (DayReservationID));
 
 CREATE TABLE ParticipantReservations (
@@ -57,6 +47,7 @@ CREATE TABLE ParticipantReservations (
 	DayReservationID int NOT NULL,
 	StudentCard int NULL,
 	StudentCardDate date NULL,
+	IsCancelled bit NOT NULL DEFAULT 0,
 	PRIMARY KEY (ParticipantReservationID));
 
 CREATE TABLE Participants (
@@ -74,6 +65,7 @@ CREATE TABLE ParticipantWorkshops (
 	WorkshopReservationID int IDENTITY(1,1) NOT NULL,
 	ParticipantReservationID int NOT NULL,
 	WorkshopID int NOT NULL,
+	IsCancelled bit NOT NULL DEFAULT 0,
 	PRIMARY KEY (WorkshopReservationID));
 
 CREATE TABLE Payments (
@@ -106,4 +98,57 @@ CREATE TABLE WorkshopsReservations (
 	DayReservationID int NOT NULL,
 	WorkshopID int NOT NULL,
 	NormalReservations int NOT NULL CHECK (NormalReservations > 0),
+	IsCancelled bit NOT NULL DEFAULT 0,
 	PRIMARY KEY (WorkshopReservationID));
+
+-- =========================================
+-- Adding Foreign Keys
+-- =========================================
+
+ALTER TABLE WorkshopsReservations
+	ADD CONSTRAINT FKWorkshopsResToDaysRes
+	FOREIGN KEY (DayReservationID) REFERENCES DaysReservations (DayReservationID);
+
+ALTER TABLE WorkshopsReservations
+	ADD CONSTRAINT FKWorkshopsResToWorkshops
+	FOREIGN KEY (WorkshopID) REFERENCES Workshops (WorkshopID);
+
+ALTER TABLE ParticipantReservations
+	ADD CONSTRAINT FKParticipantResToDaysRes
+	FOREIGN KEY (DayReservationID) REFERENCES DaysReservations (DayReservationID);
+
+ALTER TABLE ParticipantReservations
+	ADD CONSTRAINT FKParticipantResToParticipants
+	FOREIGN KEY (ParticipantID) REFERENCES Participants (ParticipantID);
+
+ALTER TABLE ParticipantWorkshops
+	ADD CONSTRAINT FKParticipantWorksToParticipantRes
+	FOREIGN KEY (ParticipantReservationID) REFERENCES ParticipantReservations (ParticipantReservationID);
+
+ALTER TABLE ParticipantWorkshops
+	ADD CONSTRAINT FKParticipantWorksToWorkshops
+	FOREIGN KEY (WorkshopID) REFERENCES Workshops (WorkshopID);
+
+ALTER TABLE ClientReservations
+	ADD CONSTRAINT FKClientResToClients
+	FOREIGN KEY (ClientID) REFERENCES Clients (ClientID);
+
+ALTER TABLE ClientReservations
+	ADD CONSTRAINT FKClientResToConferences
+	FOREIGN KEY (ConferenceID) REFERENCES Conferences (ConferenceID);
+
+ALTER TABLE DaysReservations
+	ADD CONSTRAINT FKDaysResToClientRes
+	FOREIGN KEY (ClientReservationID) REFERENCES ClientReservations (ClientReservationID);
+
+ALTER TABLE Payments
+	ADD CONSTRAINT FKPaymentsToClientRes
+	FOREIGN KEY (PaymentID) REFERENCES ClientReservations (ClientReservationID);
+
+ALTER TABLE PriceList
+	ADD CONSTRAINT FKPriceListToConferences
+	FOREIGN KEY (ConferenceID) REFERENCES Conferences (ConferenceID);
+
+ALTER TABLE Workshops
+	ADD CONSTRAINT FKWorkshopsToConferences
+	FOREIGN KEY (ConferenceID) REFERENCES Conferences (ConferenceID);
