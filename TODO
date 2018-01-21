@@ -51,18 +51,18 @@ ROLE:
 		- select klientów, posegregowanych po tych, którzy najwięcej zapłacili /*
 
 3. Procedury
-	- dodawanie konferencji
-	- dodawanie warsztatu 
-	- dodawawnie progu cenowego
-	- usuwanie progu cenowego
-	- zmiana informacji o konferencji w tym ilosci miejsc
-	- zmiana informacji o warsztacie w tym ilosci miejsc
-	- dodawanie rezerwacji na konferencje
-	- dodawanie rezerwacji na dany dzien konferencji 
-	- dodawanie rezerwacji na warsztat 
-	- dodawnie uczestnika na dany dzien konferencji
-	- dodawanie uczestnika na dany warsztat
-	- anulowanie rezerwacji na konferencje
+	- dodawanie konferencji - Ś
+	- dodawanie warsztatu - Ś
+	- dodawawnie progu cenowego - Ś
+	- usuwanie progu cenowego - Ś
+	- zmiana informacji o konferencji w tym ilosci miejsc - Ś
+	- zmiana informacji o warsztacie w tym ilosci miejsc - Ś
+	- dodawanie rezerwacji na konferencje - Ś
+	- dodawanie rezerwacji na dany dzien konferencji - Ś 
+	- dodawanie rezerwacji na warsztat - Ś
+	- dodawnie uczestnika na dany dzien konferencji - Ś
+	- dodawanie uczestnika na dany warsztat - Ś
+	- anulowanie rezerwacji na konferencje - Ś
 	- anulowanie rezerwacji na dzien konferencji
 	- anulowanie rezerwacji na warsztat
 	- anulowanie nieoplaconych w terminie rezerwacji
