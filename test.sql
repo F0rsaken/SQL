@@ -1,3 +1,5 @@
+AS
+
 -- lista warsztatów w zależności od konferencji
 CREATE FUNCTION F_ShowWorkshops
     (
@@ -10,3 +12,5 @@ RETURN
     FROM Workshops
     WHERE ConferenceID = @ConferenceID
 GO
+
+AS
