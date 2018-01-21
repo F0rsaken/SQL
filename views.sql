@@ -79,3 +79,15 @@ AS
 	ON conf.ConferenceID = cr.ConferenceID
 	WHERE p.FinePaid = p.FineAssessed AND conf.StartDate > CONVERT(date, GETDATE())
 GO
+
+-- lista anulowanych rezerwacji na konferencje
+CREATE VIEW V_CancelledConferencesReseravtions
+AS
+	SELECT c.ClientID, c.ClientName, c.ClientSurname, conf.ConferenceID, conf.ConferenceName 
+	FROM Clients AS c
+	INNER JOIN ClientReservations AS cr
+		ON c.ClientID = cr.ClientID
+	INNER JOIN Conferences AS conf
+		ON cr.ConferenceID = conf.ConferenceID
+	WHERE cr.IsCancelled = 1
+GO

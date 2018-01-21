@@ -24,6 +24,8 @@ insert into ClientReservations(ConferenceID, ClientID)
 	values (2, 2)
 insert into ClientReservations(ConferenceID, ClientID)
 	values (1, 3)
+insert into ClientReservations(ConferenceID, ClientID, IsCancelled)
+	values (1, 3, 1)
 
 insert into Workshops
 	values (1, 1, 'X1', 10, 20, '8:00', '9:00')
