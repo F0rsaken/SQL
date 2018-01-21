@@ -538,3 +538,42 @@ BEGIN
 END
 GO
 
+-- anulowanie rezerwacji na konferencje 
+CREATE PROCEDURE P_CancelConferenceReservation
+	@ClientReservationID		int
+AS
+BEGIN
+
+	-- czy istnieje rezerwacja o podanym id
+	IF NOT EXISTS
+		(
+			SELECT *
+			FROM ClientReservations
+			WHERE ClientReservationID = @ClientReservationID
+		)
+	BEGIN
+		RAISERROR ('Nie ma rezerwacji na konferencje o podanym ID.', -1, -1)
+		RETURN
+	END
+
+	-- czy rezerwacja zostala juz anulowana
+	IF 
+		( 
+			SELECT IsCancelled
+			FROM ClientReservations
+			WHERE ClientReservationID = @ClientReservationID
+		) = 1
+	BEGIN
+		RAISERROR ('Ta rezerwacja zosta³a ju¿ anulowana.', -1, -1)
+		RETURN
+	END
+
+	UPDATE ClientReservations
+		SET IsCancelled = 1
+		WHERE ClientReservationID = @ClientReservationID
+
+END
+GO
+
+--exec P_CancelConferenceReservation @ClientReservationID = 15
+--go
