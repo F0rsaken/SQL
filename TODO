@@ -63,14 +63,14 @@ ROLE:
 	- dodawnie uczestnika na dany dzien konferencji - Ś
 	- dodawanie uczestnika na dany warsztat - Ś
 	- anulowanie rezerwacji na konferencje - Ś
-	- anulowanie rezerwacji na dzien konferencji
-	- anulowanie rezerwacji na warsztat
-	- anulowanie nieoplaconych w terminie rezerwacji
+	- anulowanie rezerwacji na dzien konferencji /* -- czy nie dać na trigger?
+	- anulowanie rezerwacji na warsztat -- trigger?
+	- anulowanie nieoplaconych w terminie rezerwacji -- trigger?
 	- anulowanie dodania uczestnika na dany dzien konferencji
 	- anulowanie dodania uczestnika na dany warsztat
 	- zmiana ilosci zarezerwowanych miejsc na dany dzien konferencji
 	- zmiana ilosci zarezerwowanych miejsc na dany warsztat
-	- dodawanie klienta
+	- dodawanie klienta /*
 	- dodawanie uczestnika
 	- sprawdzanie, czy wpłyneła opłata od klienta
 	- wyliczenie opłaty za rezerwacje konferencji

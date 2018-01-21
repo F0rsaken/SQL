@@ -1,3 +1,6 @@
+USE mmandows_a
+GO
+
 -- dodawanie konferencji
 CREATE PROCEDURE P_AddConference
 	@ConferenceName varchar(50),
@@ -134,6 +137,79 @@ BEGIN
 	END
 END	
 GO
+
+--dodawanie klienta
+CREATE PROCEDURE P_AddClient
+	@ClientName VARCHAR(50),
+	@ClientSurname VARCHAR(50),
+	@IsPrivate BIT,
+	@PhoneNumber INT,
+	@Email VARCHAR(50),
+	@Address VARCHAR(50),
+	@City VARCHAR(50),
+	@PostalCode INT,
+	@Country VARCHAR(30)
+AS
+BEGIN
+	IF EXISTS (
+		SELECT * FROM Clients
+		WHERE @Email = Email
+	)
+	BEGIN
+		RAISERROR ('Taki klient już instnieje w bazie', -1, -1)
+		RETURN
+	END
+
+	INSERT INTO Clients
+		VALUES (
+			@ClientName,
+			@ClientSurname,
+			@IsPrivate,
+			@PhoneNumber,
+			@Email,
+			@Address,
+			@City,
+			@PostalCode,
+			@Country
+		)
+END
+GO
+
+--dodawanie uczestników
+CREATE PROCEDURE P_AddParticipant
+	@Name VARCHAR(50),
+	@Surname VARCHAR(50),
+	@PhoneNumber INT,
+	@Email VARCHAR(50),
+	@City VARCHAR(50),
+	@Country VARCHAR(50)
+AS
+BEGIN
+	IF EXISTS (
+		SELECT * FROM Participants
+		WHERE Email = @Email
+	)
+	BEGIN
+		RAISERROR ('Taki uczestnik już istnieje', -1, -1)
+		RETURN
+	END
+
+	INSERT INTO Participants
+		VALUES (
+			@Name,
+			@Surname,
+			@PhoneNumber,
+			@Email,
+			@City,
+			@Country
+		)
+END
+GO
+
+-- EXEC P_AddParticipant @Name = 'x8', @Surname = 'x7', @PhoneNumber = 111111117, @Email = 'x7@gmail.com', @City = 'xyz', @Country = 'Xyz'
+
+-- EXEC P_AddClient @ClientName = 'A', @ClientSurname = 'AB', @IsPrivate = 1, @PhoneNumber = 211111111, @Email = 'A1@gmail.com', @Address = 'a1a1', @City = 'a1a1', @PostalCode = 123123, @Country = 'ABAB';
+
 -- EXEC P_AddPriceToConferencePriceList @ConferenceID = 4, @PriceValue = 200, @PriceDate = '2001-04-13';
 -- EXEC P_DeletePriceFromConferencePriceList @PriceID = 16; 
 
