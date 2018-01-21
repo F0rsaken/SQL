@@ -32,6 +32,8 @@ ROLE:
 		- nieopłacone rezerwacje, które są jeszcze aktywne /*
 		- nadpłacone rezerwacje /*
 		- opłacone rezerwacje /*
+		- lista anulowanych rezerwacji na konferencje /*
+		- lista klientów /*
 
 	- organizator ?
 		- select klientów, posegregowanych po najczęściaj korzystających /*
