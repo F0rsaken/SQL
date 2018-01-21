@@ -223,3 +223,83 @@ AS
 		AND w.WorkshopID = @WorkshopID
 		GROUP BY w.WorkshopID, w.Places, w.WorkshopName
 GO
+
+-- opłaty klienta nieuregulowane
+CREATE FUNCTION F_NonregulatedPaymentsByClientID
+(
+		@ClientID  int
+	)
+	RETURNS TABLE
+AS
+	RETURN
+		SELECT c.ClientID, c.ClientName, c.ClientSurname, conf.ConferenceID, conf.ConferenceName, p.FineAssessed, p.FinePaid
+		FROM Clients AS c
+		INNER JOIN ClientReservations AS cr
+				ON c.ClientID = cr.ClientID
+		INNER JOIN Payments AS p
+				ON cr.ClientReservationID = p.PaymentID
+		INNER JOIN Conferences AS conf
+				ON cr.ConferenceID = conf.ConferenceID
+		WHERE cr.IsCancelled = 0
+				AND p.FinePaid < p.FineAssessed
+				AND c.ClientID = @ClientID
+GO
+
+-- opłaty klienta uregulowane
+CREATE FUNCTION F_RegulatedPaymentsByClientID
+	(
+		@ClientID int
+	)
+	RETURNS TABLE
+AS 
+	RETURN 
+		SELECT c.ClientID, c.ClientName, c.ClientSurname, conf.ConferenceID, conf.ConferenceName, p.FineAssessed, p.FinePaid
+		FROM Clients AS c
+		INNER JOIN ClientReservations AS cr
+				ON c.ClientID = cr.ClientID
+		INNER JOIN Payments AS p
+				ON cr.ClientReservationID = p.PaymentID
+		INNER JOIN Conferences AS conf
+				ON cr.ConferenceID = conf.ConferenceID
+		WHERE c.ClientID = @ClientID 
+				AND cr.IsCancelled = 0
+				AND p.FineAssessed <= FinePaid
+GO
+
+-- wszystkie opłaty klienta
+CREATE FUNCTION F_AllPaymentsByClientID
+	(
+		@ClientID int
+	)
+	RETURNS TABLE
+AS 
+	RETURN 
+		SELECT c.ClientID, c.ClientName, c.ClientSurname, conf.ConferenceID, conf.ConferenceName, p.FineAssessed, p.FinePaid
+		FROM Clients AS c
+		INNER JOIN ClientReservations AS cr
+				ON c.ClientID = cr.ClientID
+		INNER JOIN Payments AS p
+				ON cr.ClientReservationID = p.PaymentID
+		INNER JOIN Conferences AS conf
+				ON cr.ConferenceID = conf.ConferenceID
+		WHERE c.ClientID = @ClientID 
+				AND cr.IsCancelled = 0
+GO
+
+-- rezerwacje klienta
+CREATE FUNCTION F_ClientReservationsHistory
+	(
+		@ClientID int
+	)
+	RETURNS TABLE
+AS 
+	RETURN 
+		SELECT c.ClientID, c.ClientName, c.ClientSurname, cr.ConferenceID, cr.IsCancelled, conf.ConferenceName
+		FROM Clients AS c
+		INNER JOIN ClientReservations AS cr 
+				ON c.ClientID = cr.ClientID
+		INNER JOIN Conferences AS conf
+				ON cr.ConferenceID = conf.ConferenceID
+		WHERE c.ClientID = @ClientID
+GO
+
