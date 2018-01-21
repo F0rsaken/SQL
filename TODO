@@ -24,7 +24,18 @@ ROLE:
 		- anulowanie rejestracji na dzień
 		- anulowanie rejestracji na warsztat
 
-1. Triggery
+1. Triggery (do poprawy)
+		- sprawdzanie czy wpisany dzien warsztatu jest jednym z dni konferencji
+		- sprawdzanie czy data obowiazywania progu cenowego nie jest mniejsza od poprzedniej 
+			i wieksza od daty konca konferencji 
+		- sprawdzanie czy ilosc miejsc ktore ktos chce zarezerwowac miesci sie w wolnych 
+			do zarezerwowania miejscach
+		- to samo dla warsztatu
+		- sprawdzenie czy dany uczestnik jest zapisany na dzien konferencji przed dodaniem go na warsztat
+		- sprawdzenie czy sa wolne miejsca przed dodaniem na warsztat
+		- przy anulowaniu rezerwacji na konferencje - anulowanie rezerwacji na dni, warsztaty, 
+			anulowanie rezerwacji uczestnikow na dni konf. i warsztaty
+		-  	
 
 2. Widoki
 	-system (pani Ania)
@@ -40,6 +51,27 @@ ROLE:
 		- select klientów, posegregowanych po tych, którzy najwięcej zapłacili /*
 
 3. Procedury
+	- dodawanie konferencji
+	- dodawanie warsztatu 
+	- dodawawnie progu cenowego
+	- usuwanie progu cenowego
+	- zmiana informacji o konferencji w tym ilosci miejsc
+	- zmiana informacji o warsztacie w tym ilosci miejsc
+	- dodawanie rezerwacji na konferencje
+	- dodawanie rezerwacji na dany dzien konferencji 
+	- dodawanie rezerwacji na warsztat 
+	- dodawnie uczestnika na dany dzien konferencji
+	- dodawanie uczestnika na dany warsztat
+	- anulowanie rezerwacji na konferencje
+	- anulowanie rezerwacji na dzien konferencji
+	- anulowanie rezerwacji na warsztat
+	- anulowanie nieoplaconych w terminie rezerwacji
+	- anulowanie dodania uczestnika na dany dzien konferencji
+	- anulowanie dodania uczestnika na dany warsztat
+	- zmiana ilosci zarezerwowanych miejsc na dany dzien konferencji
+	- zmiana ilosci zarezerwowanych miejsc na dany warsztat
+	- dodawanie klienta
+	- dodawanie uczestnika
 	- sprawdzanie, czy wpłyneła opłata od klienta
 	- wyliczenie opłaty za rezerwacje konferencji
 
