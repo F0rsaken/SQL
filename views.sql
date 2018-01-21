@@ -1,4 +1,4 @@
--- select klientów, posegregowanych po najczêœciaj korzystaj¹cych
+-- select klientï¿½w, posegregowanych po najczï¿½ciaj korzystajï¿½cych
 CREATE VIEW V_MostFrequentClients 
 AS
 	SELECT TOP 10 c.ClientName, c.ClientSurname, COUNT (*) AS Frequency
@@ -10,7 +10,7 @@ AS
 	ORDER BY Frequency DESC
 GO 
 
--- select klientów, posegregowanych po tych, którzy najwiêcej zap³acili
+-- select klientï¿½w, posegregowanych po tych, ktï¿½rzy najwiï¿½cej zapï¿½acili
 CREATE VIEW V_MostProfitableClients
 AS
 	SELECT TOP 10 c.ClientName, c.ClientSurname, SUM(p.FineAssessed) as TotalProfit
@@ -22,4 +22,32 @@ AS
 	WHERE cr.IsCancelled = 0
 	GROUP BY cr.ClientID, c.ClientName, c.ClientSurname
 	ORDER BY TotalProfit DESC
+GO
+
+-- nieopÅ‚acone rezerwacje nieaktywne
+CREATE VIEW V_UnpayedCancelledReservations
+AS
+	SELECT conf.ConferenceName, c.ClientName
+	FROM Payments p
+	JOIN ClientReservations cr
+	ON cr.ClientReservationID = p.PaymentID
+	JOIN Clients c
+	ON c.ClientID = cr.ClientID
+	JOIN Conferences conf
+	ON conf.ConferenceID = cr.ConferenceID
+	WHERE p.FineAssessed < p.FinePaid AND cr.IsCancelled = 1
+GO
+
+-- nieopÅ‚acone rezerwacje wciÄ…Å¼ aktywne
+CREATE VIEW V_UnpayedNotCancelledReservations
+AS
+	SELECT conf.ConferenceName, c.ClientName, (p.FineAssessed - p.FinePaid) as Difference
+	FROM Payments p
+	JOIN ClientReservations cr
+	ON cr.ClientReservationID = p.PaymentID
+	JOIN Clients c
+	ON c.ClientID = cr.ClientID
+	JOIN Conferences conf
+	ON conf.ConferenceID = cr.ConferenceID
+	WHERE p.FineAssessed < p.FinePaid AND cr.IsCancelled = 0
 GO

@@ -220,3 +220,18 @@ insert into PriceList
 	values (3, 140, '2001-01-22')
 insert into PriceList
 	values (3, 200, '2001-03-21')
+
+insert into WorkshopsReservations
+	values (1, 1, 10, 0)
+insert into WorkshopsReservations
+	values (2, 2, 10, 0)
+insert into WorkshopsReservations
+	values (2, 3, 10, 0)
+insert into WorkshopsReservations
+	values (4, 4, 10, 0)
+insert into WorkshopsReservations
+	values (4, 5, 10, 0)
+insert into WorkshopsReservations
+	values (12, 4, 10, 0)
+insert into WorkshopsReservations
+	values (12, 5, 10, 0)

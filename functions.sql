@@ -112,20 +112,31 @@ END
 GO
 
 --lista klientów na konferecje, którzy jeszcze nie zajeli wszystkich miejsc
--- CREATE FUNCTION F_ClientsWithUnusedPlaces
---     (
---         @ConferenceID
---     )
---     RETURNS TABLE
--- AS
--- RETURN
---     SELECT
---     FROM ClientReservations
---     JOIN Clients c
---     ON
+CREATE FUNCTION F_ClientsWithUnusedPlaces
+    (
+        @ConferenceID int
+    )
+    RETURNS TABLE
+ AS
+ RETURN
+    SELECT dr.ConferenceDay, c.ClientName, (dr.NormalReservations + dr.StudentsReservations - (
+		SELECT COUNT(*)
+		FROM ParticipantReservations pr
+		WHERE pr.DayReservationID = dr.DayReservationID
+	)) as FreePlaces
+    FROM DaysReservations dr
+	JOIN ClientReservations cr
+	ON cr.ClientReservationID = dr.ClientReservationID
+	JOIN Clients c
+	ON c.ClientID = cr.ClientID
+	WHERE cr.ConferenceID = @ConferenceID AND (dr.NormalReservations + dr.StudentsReservations - (
+		SELECT COUNT(*)
+		FROM ParticipantReservations pr
+		WHERE pr.DayReservationID = dr.DayReservationID
+	)) != 0
+GO
 
 --lista uczestników na każdy dzień konferencji
-
 CREATE FUNCTION F_ParticipantsListForConferenceDay
 	(
 		@ConferenceID int,
