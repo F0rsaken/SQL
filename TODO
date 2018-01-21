@@ -51,12 +51,12 @@ ROLE:
 		- select klientów, posegregowanych po tych, którzy najwięcej zapłacili /*
 
 3. Procedury
-	- dodawanie konferencji - Ś - zrobione
-	- dodawanie warsztatu - Ś - zrobione
-	- dodawawnie progu cenowego - Ś - zrobione
-	- usuwanie progu cenowego - Ś - zrobione
-	- zmiana informacji o konferencji w tym ilosci miejsc - Ś
-	- zmiana informacji o warsztacie w tym ilosci miejsc - Ś
+	- dodawanie konferencji - Ś - /*
+	- dodawanie warsztatu - Ś - /*
+	- dodawawnie progu cenowego - Ś - /*
+	- usuwanie progu cenowego - Ś - /*
+	- zmiana informacji o konferencji w tym ilosci miejsc Ś - /*
+	- zmiana informacji o warsztacie w tym ilosci miejsc - Ś - /*
 	- dodawanie rezerwacji na konferencje - Ś
 	- dodawanie rezerwacji na dany dzien konferencji - Ś 
 	- dodawanie rezerwacji na warsztat - Ś
