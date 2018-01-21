@@ -47,10 +47,7 @@ BEGIN
 END 
 GO
 
-
-EXEC P_AddWorkshop @ConferenceID = 4, @ConferenceDay = 1, @WorkshopName = 'WorkshopProcedureTest', @Places = 35, @WorkshopFee = 20, @WorkshopStart = '9:00', @WorkshopEnd = '10:30';
-GO
-
+--EXEC P_AddWorkshop @ConferenceID = 4, @ConferenceDay = 1, @WorkshopName = 'WorkshopProcedureTest', @Places = 35, @WorkshopFee = 20, @WorkshopStart = '9:00', @WorkshopEnd = '10:30';
 
 -- dodawanie progu cenowego
 CREATE PROCEDURE P_AddPriceToConferencePriceList
@@ -59,6 +56,17 @@ CREATE PROCEDURE P_AddPriceToConferencePriceList
 	@PriceDate		date 
 AS
 BEGIN
+	IF NOT EXISTS 
+		(
+			SELECT * 
+			FROM Conferences 
+			WHERE ConferenceID = @ConferenceID
+		)
+	BEGIN
+		RAISERROR ('Nie ma konferencji o takim ID.', -1, -1)
+		RETURN
+	END
+
 	INSERT INTO PriceList
 		VALUES
 		(
@@ -68,8 +76,6 @@ BEGIN
 		)
 END
 GO
-
-
 
 -- usuwanie progu cenowego
 CREATE PROCEDURE P_DeletePriceFromConferencePriceList
@@ -83,7 +89,8 @@ BEGIN
 			WHERE PriceID = @PriceID
 		)
 	BEGIN
-		RAISERROR ('Droga pani Aniu, nie ma progu cenowego o podanym ID', -1, -1)
+		RAISERROR ('Nie ma progu cenowego o podanym ID', -1, -1)
+		RETURN
 	END
 	DELETE PriceList
 		WHERE PriceID = @PriceID 
@@ -262,10 +269,11 @@ BEGIN
 			WHERE ConferenceID = @ConferenceID
 		)
 	BEGIN
-		RAISERROR ('Pani Aniu, nie ma konferencji o takim ID.', -1, -1)
+		RAISERROR ('Nie ma konferencji o takim ID.', -1, -1)
+		RETURN
 	END
 
-	-- aktualizowanie poczï¿½tku konferencji
+	-- aktualizowanie poczatku konferencji
 	IF @StartDate IS NOT NULL
 	BEGIN 
 		UPDATE Conferences
@@ -273,7 +281,7 @@ BEGIN
 			WHERE ConferenceID = @ConferenceID
 	END
 
-	-- aktualizowanie koï¿½ca konferencji
+	-- aktualizowanie konca konferencji
 	IF @EndDate IS NOT NULL
 	BEGIN
 		UPDATE Conferences
@@ -281,7 +289,7 @@ BEGIN
 			WHERE ConferenceID = @ConferenceID
 	END
 
-	-- aktualizoawnie zniï¿½ki
+	-- aktualizoawnie znizki
 	IF @Discount IS NOT NULL
 	BEGIN 
 		UPDATE Conferences
@@ -300,8 +308,8 @@ BEGIN
 END
 GO
 
-EXEC P_ChangeConferenceDetails @ConferenceID = 20, @StartDate = '2001-04-14', @EndDate = '2001-04-17', @Places = 400, @Discount = NULL;
-GO
+--EXEC P_ChangeConferenceDetails @ConferenceID = 20, @StartDate = '2001-04-14', @EndDate = '2001-04-17', @Places = 400, @Discount = NULL;
+--GO
 
 -- zmiana informacji o warsztacie w tym ilosci miejsc 
 CREATE PROCEDURE P_ChangeWorkshopDetails
@@ -319,7 +327,8 @@ BEGIN
 			WHERE WorkshopID = @WorkshopID
 		)
 	BEGIN 
-		RAISERROR ('Pani Aniu, nie ma warsztatu o takim ID.', -1, -1)
+		RAISERROR ('Nie ma warsztatu o takim ID.', -1, -1)
+		RETURN
 	END
 
 	-- aktualizowanie dnia 
@@ -357,4 +366,215 @@ BEGIN
 END
 GO
 
-EXEC P_ChangeWorkshopDetails @WorkshopID = 1, @ConferenceDay = NULL, @Places = 20, @WorkshopStart = NULL, @WorkshopEnd = NULL; 
+--EXEC P_ChangeWorkshopDetails @WorkshopID = 30, @ConferenceDay = NULL, @Places = 20, @WorkshopStart = NULL, @WorkshopEnd = NULL; 
+--GO
+
+-- dodawanie rezerwacji na konferencje 
+CREATE PROCEDURE P_AddReservationForConference
+	@ConferenceID		int,
+	@ClientID			int
+AS
+BEGIN
+	IF EXISTS 
+		( 
+			SELECT *
+			FROM ClientReservations
+			WHERE ConferenceID = @ConferenceID
+				AND ClientID = @ClientID
+				AND IsCancelled = 0
+		)
+	BEGIN
+		RAISERROR ('Klient o podanym ID juz rejestrowa³ siê na konferencjê o podanym ID', -1, -1)
+		RETURN
+	END
+	INSERT INTO ClientReservations (ConferenceID, ClientID)
+		VALUES
+		(
+			@ConferenceID,
+			@ClientID
+		)
+
+END
+GO
+
+--exec P_AddReservationForConference @ConferenceID = 4, @ClientID =4;
+--go
+
+-- dodawanie rezerwacji na dany dzien konferencji
+CREATE PROCEDURE P_AddReservationForConferenceDay
+	@ClientReservationID		int,
+	@ConferenceDay				int,
+	@NormalReservations			int,
+	@StudentReservations		int
+AS
+BEGIN
+	IF EXISTS
+		(
+			SELECT *
+			FROM DaysReservations 
+			WHERE ClientReservationID = @ClientReservationID
+				AND ConferenceDay     = @ConferenceDay
+				AND IsCancelled		  = 0
+		)
+	BEGIN
+		RAISERROR ('Ten klient dokonywa³ ju¿ rejestracji na ten dzieñ konferencji', -1, -1)
+		RETURN
+	END
+
+	INSERT INTO DaysReservations
+		(
+			ClientReservationID,
+			ConferenceDay,
+			NormalReservations,
+			StudentsReservations
+		)
+	VALUES
+		(
+			@ClientReservationID,
+			@ConferenceDay,
+			@NormalReservations,
+			@StudentReservations
+		)
+
+END
+GO
+
+--exec P_AddReservationForConferenceDay @ClientReservationID = 1, @ConferenceDay = 1, @NormalReservations = 10, @StudentReservations = 0;
+--go
+
+-- dodawanie rezerwacji na warsztat
+CREATE PROCEDURE P_AddReservationForWorkshop
+	@DayReservationID		int,
+	@WorkshopID				int,
+	@NormalReservations		int
+AS
+BEGIN
+	IF EXISTS
+		(
+			SELECT *
+			FROM WorkshopsReservations
+			WHERE DayReservationID = @DayReservationID
+				AND WorkshopID	   = @WorkshopID
+				AND IsCancelled	   = 0
+		)
+	BEGIN
+		RAISERROR ('Ten klient rezerwowa³ juz miejsca na ten warsztat', -1, -1)
+		RETURN
+	END
+
+	INSERT INTO WorkshopsReservations
+		(
+			DayReservationID,
+			WorkshopID,
+			NormalReservations
+		)
+	VALUES
+		(
+			@DayReservationID,
+			@WorkshopID,
+			@NormalReservations
+		)
+END
+GO
+
+-- dodawnie uczestnika na dany dzien konferencji 
+CREATE PROCEDURE P_AddParticipantForConferenceDay
+	(
+		@ParticipantID		int,
+		@DayReservationID	int,
+		@StudentCard		int,
+		@StudentCardDate	date
+	)
+AS
+BEGIN
+	-- czy uczestnik juz nie zostal zarejestrowany
+	IF EXISTS 
+		(
+			SELECT *
+			FROM ParticipantReservations
+			WHERE ParticipantID		 = @ParticipantID
+				AND DayReservationID = @DayReservationID
+				AND IsCancelled		 = 0
+		)
+		BEGIN
+			RAISERROR ('Podany uczestnik jest ju¿ zarejestrowany na ten dzieñ konferencji.', -1, -1)
+			RETURN
+		END
+	
+	-- czy uczestnik istnieje
+	IF NOT EXISTS 
+		(
+			SELECT *
+			FROM Participants
+			WHERE ParticipantID = @ParticipantID
+		)
+	BEGIN 
+		RAISERROR ('Nie ma uczestnika o podanym ID.', -1, -1)
+		RETURN
+	END
+
+	-- czy istnieje rezerwacja dnia o podanym ID
+	IF NOT EXISTS
+		(
+			SELECT *
+			FROM DaysReservations
+			WHERE DayReservationID = @DayReservationID
+				AND IsCancelled = 0
+		)
+	BEGIN
+		RAISERROR ('Nie ma rezerwacji dnia o podanym ID.', -1 , -1)
+		RETURN
+	END
+	
+	INSERT INTO ParticipantReservations
+		(
+			ParticipantID,
+			DayReservationID,
+			StudentCard,
+			StudentCardDate
+		)
+	VALUES
+		(
+			@ParticipantID,
+			@DayReservationID,
+			@StudentCard,
+			@StudentCardDate
+		)
+
+END
+GO
+
+
+-- dodawanie uczestnika na dany warsztat 
+CREATE PROCEDURE P_AddParticipantForWorkshop
+	@ParticipantReservationID	int,
+	@WorkshopID					int
+AS
+BEGIN
+	IF EXISTS 
+		(
+			SELECT *
+			FROM ParticipantWorkshops
+			WHERE ParticipantReservationID = @ParticipantReservationID
+				AND WorkshopID			   = @WorkshopID
+				AND IsCancelled			   = 0
+		)
+	BEGIN
+		RAISERROR ('Podany uczestnik rezerwowa³ jest ju¿ zarejestrowany na ten warsztat.', -1, -1)
+		RETURN
+	END
+
+	INSERT INTO ParticipantWorkshops
+		(
+			ParticipantReservationID,
+			WorkshopID
+		)
+	VALUES
+		(
+			@ParticipantReservationID,
+			@WorkshopID
+		)
+
+END
+GO
+
