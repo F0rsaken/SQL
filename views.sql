@@ -51,3 +51,31 @@ AS
 	ON conf.ConferenceID = cr.ConferenceID
 	WHERE p.FineAssessed < p.FinePaid AND cr.IsCancelled = 0
 GO
+
+--nadpłacone rezerwacje
+CREATE VIEW V_OverPayedReservations
+AS
+	SELECT conf.ConferenceName, c.ClientName, (p.FinePaid - p.FineAssessed) as Difference
+	FROM Payments p
+	JOIN ClientReservations cr
+	ON cr.ClientReservationID = p.PaymentID
+	JOIN Clients c
+	ON c.ClientID = cr.ClientID
+	JOIN Conferences conf
+	ON conf.ConferenceID = cr.ConferenceID
+	WHERE p.FinePaid > p.FineAssessed
+GO
+
+-- opłacone rezerwacje, przed konferencją
+CREATE VIEW V_PayedReservations
+AS
+	SELECT conf.ConferenceName, c.ClientName
+	FROM Payments p
+	JOIN ClientReservations cr
+	ON cr.ClientReservationID = p.PaymentID
+	JOIN Clients c
+	ON c.ClientID = cr.ClientID
+	JOIN Conferences conf
+	ON conf.ConferenceID = cr.ConferenceID
+	WHERE p.FinePaid = p.FineAssessed AND conf.StartDate > CONVERT(date, GETDATE())
+GO

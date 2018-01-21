@@ -28,14 +28,11 @@ ROLE:
 
 2. Widoki
 	-system (pani Ania)
-		- nieopłacone rezerwacje w terminie
-		- nieopłacone rezerwacje, które są jeszcze aktywne
-		- nadpłacone rezerwacje
-		- opłacone rezerwacje
-	- klient
-		
-	- uczestnik
-		
+		- nieopłacone rezerwacje w terminie /*
+		- nieopłacone rezerwacje, które są jeszcze aktywne /*
+		- nadpłacone rezerwacje /*
+		- opłacone rezerwacje /*
+
 	- organizator ?
 		- select klientów, posegregowanych po najczęściaj korzystających /*
 		- select klientów, posegregowanych po tych, którzy najwięcej zapłacili /*
@@ -58,8 +55,8 @@ ROLE:
 	- wszystkie opłaty klienta /*
 	- uregulowane opłaty klienta /*
 	- nieuregulowane opłaty klienta /*
-	- rezerwacje klienta
-	- rezerwacje uczestnika
+	- rezerwacje klienta /
+
 5. Indeksy
 	- clients
 	- participants
