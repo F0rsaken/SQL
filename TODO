@@ -39,25 +39,25 @@ ROLE:
 	- uczestnik
 		- rezerwacje
 	- organizator ?
-		- lista uczestników na każdy dzień konferencji
-		- lista uczestników na każdy warsztat
-		- każdy dzień konferencji z liczbą wolnych i zarezerwowanych miejsc
-		- lista warsztatów z liczbą wolnych i zarezerwowanych miejsc
-		- opłaty klienta
-		- select klientów, posegregowanych po najczęściaj korzystających
-		- select klientów, posegregowanych po tych, którzy najwięcej zapłacili
+		- select klientów, posegregowanych po najczęściaj korzystających /*
+		- select klientów, posegregowanych po tych, którzy najwięcej zapłacili /*
 
 3. Procedury
 	- sprawdzanie, czy wpłyneła opłata od klienta
 	- wyliczenie opłaty za rezerwacje konferencji
 
 4. Funkcje
-	- lista warsztatów w zależności od konferencji
-	- tworzenie identyfikatorów
-	- lista uczestników na konferencje
-	- stawki cenowe za konferencje
-	- cena za konferencje od daty
+	- lista warsztatów w zależności od konferencji /*
+	- tworzenie identyfikatorów /*
+	- lista uczestników na konferencje /*
+	- stawki cenowe za konferencje /*
+	- cena za konferencje od daty /*
 	- lista klientów na konferecje, którzy jeszcze nie zajeli wszystkich miejsc
+	- lista uczestników na każdy dzień konferencji /*
+	- lista uczestników na każdy warsztat /*
+	- każdy dzień konferencji z liczbą wolnych i zarezerwowanych miejsc /*
+	- lista warsztatów z liczbą wolnych i zarezerwowanych miejsc /*
+	- opłaty klienta
 5. Indeksy
 	- clients
 	- participants
