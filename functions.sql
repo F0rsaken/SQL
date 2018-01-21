@@ -43,7 +43,7 @@ CREATE FUNCTION F_CreatePeopleIdentifiers
     RETURNS TABLE
 AS
 RETURN
-    SELECT DISTINCT sub.ParticipantID, p.Name, p.Surname, c.ClientName
+    SELECT DISTINCT sub.ParticipantID, p.Name, p.Surname, IIF(c.IsPrivate = 0, '', c.ClientName) as ClientName
     FROM (
         SELECT pr.ParticipantID, cr.ClientID
         FROM Conferences c
@@ -59,25 +59,6 @@ RETURN
     ON p.ParticipantID = sub.ParticipantID
     JOIN Clients c
     ON c.ClientID = sub.ClientID
-    WHERE c.IsPrivate = 0
-	UNION
-	SELECT DISTINCT sub.ParticipantID, p.Name, p.Surname, "isPrivate"
-	FROM (
-        SELECT pr.ParticipantID, cr.ClientID
-        FROM Conferences c
-            JOIN ClientReservations cr
-            on c.ConferenceID = cr.ConferenceID
-            JOIN DaysReservations dr
-            on dr.ClientReservationID = cr.ClientReservationID
-            JOIN ParticipantReservations pr
-            on pr.DayReservationID = dr.DayReservationID
-        WHERE c.ConferenceID = @ConferenceID AND pr.IsCancelled = 0
-    ) as sub
-    JOIN Participants p
-    ON p.ParticipantID = sub.ParticipantID
-    JOIN Clients c
-    ON c.ClientID = sub.ClientID
-    WHERE c.IsPrivate = 1
 GO
 
 -- wszystkie stawki cenowe dla konferencji
