@@ -91,3 +91,19 @@ AS
 		ON cr.ConferenceID = conf.ConferenceID
 	WHERE cr.IsCancelled = 1
 GO
+
+--lista klientów
+CREATE VIEW V_ClientsList
+AS
+	SELECT ClientID,
+		   IIF(IsPrivate = 0, ClientName, ClientName + ' ' + ClientSurname) as Name,
+		   PhoneNumber,
+		   Email,
+		   Address,
+		   City,
+		   PostalCode,
+		   Country
+	FROM Clients
+GO
+
+
