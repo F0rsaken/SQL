@@ -71,8 +71,8 @@ ROLE:
 	- zmiana ilosci zarezerwowanych miejsc na dany dzien konferencji
 	- zmiana ilosci zarezerwowanych miejsc na dany warsztat
 	- dodawanie klienta /*
-	- dodawanie uczestnika
-	- sprawdzanie, czy wpłyneła opłata od klienta
+	- dodawanie uczestnika /*
+	- sprawdzanie statusu opłaty klienta
 	- wyliczenie opłaty za rezerwacje konferencji
 
 4. Funkcje

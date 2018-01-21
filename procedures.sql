@@ -206,6 +206,46 @@ BEGIN
 END
 GO
 
+--sprawdzanie statusu opłaty klienta
+CREATE PROCEDURE P_CheckCurrentPayment
+	@ClientID INT,
+	@ConferenceID INT
+AS
+BEGIN
+	DECLARE @PaymentID INT, @FineAssessed money, @FinePaid money;
+	SET @PaymentID = (
+		SELECT ClientReservationID
+		FROM ClientReservations
+		WHERE @ConferenceID = ConferenceID AND @ClientID = ClientID
+	)
+
+	SET @FineAssessed = (
+		SELECT FineAssessed
+		FROM Payments
+		WHERE @PaymentID = PaymentID
+	)
+	SET @FineAssessed = (
+		SELECT FinePaid
+		FROM Payments
+		WHERE @PaymentID = PaymentID
+	)
+
+	IF @FineAssessed > @FinePaid
+	BEGIN
+		RAISERROR ('Klient jeszcze nie zapłacił', -1, -1)
+		RETURN
+	END
+
+	IF @FineAssessed = @FinePaid
+	BEGIN
+		RAISERROR ('Klient zapłacił', -1, -1)
+		RETURN
+	END
+
+	RAISERROR ('Klient nadpłacił', -1, -1)
+END
+GO
+
 -- EXEC P_AddParticipant @Name = 'x8', @Surname = 'x7', @PhoneNumber = 111111117, @Email = 'x7@gmail.com', @City = 'xyz', @Country = 'Xyz'
 
 -- EXEC P_AddClient @ClientName = 'A', @ClientSurname = 'AB', @IsPrivate = 1, @PhoneNumber = 211111111, @Email = 'A1@gmail.com', @Address = 'a1a1', @City = 'a1a1', @PostalCode = 123123, @Country = 'ABAB';
