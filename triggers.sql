@@ -299,7 +299,7 @@ DECLARE @FreePlaces	int
 
 PRINT @FreePlaces
 */
-use 
+go 
 
 -- blokuje rezerwacje lub update miejsc na warsztat jezeli nie ma juz tylu miejsc lub zostalo podane wiecej miejsc niz zarezerwowane na konf.
 CREATE TRIGGER T_ControlPlacesForWorkshop
@@ -372,7 +372,7 @@ update DaysReservations
 select *
 from F_FreeAndReservedPlacesForWorkshop(2)
 */
-use
+go
 
 -- blokuje zmniejszenie liczby miejsc na konferencje jezeli ilosc do tej pory zarezerwowanych miejsc jest wieksza od nowej liczby dostepnych miejsc
 CREATE TRIGGER T_ControlUpdatingPlacesForConference
@@ -405,7 +405,7 @@ from F_FreeAndReservedPlacesForConference(1)
 
 exec P_ChangeConferenceDetails @ConferenceID =1, @StartDate = NULL, @EndDate = NULL, @Places = 40, @Discount = 0.25;
 */
-use
+go
 
 -- blokuje zmniejszenie liczby miejsc na warsztat jezeli ilosc do tej pory zarezerwowanych miejsc jest wieksza od nowej liczby dostepnych miejsc
 CREATE TRIGGER T_ControlUpdatingPlacesForWorkshop
@@ -440,4 +440,7 @@ from F_FreeAndReservedPlacesForWorkshop(3)
 select * 
 from Workshops
 */
-use
+go
+
+
+-- blokuje zm
