@@ -71,8 +71,8 @@ ROLE:
 	- anulowanie rezerwacji na dzien konferencji /*
 	- anulowanie rezerwacji na warsztat /*
 	- anulowanie nieoplaconych w terminie rezerwacji /*
-	- anulowanie dodania uczestnika na dany dzien konferencji
-	- anulowanie dodania uczestnika na dany warsztat
+	- anulowanie dodania uczestnika na dany dzien konferencji /*
+	- anulowanie dodania uczestnika na dany warsztat /*
 	- zmiana ilosci zarezerwowanych miejsc na dany dzien konferencji
 	- zmiana ilosci zarezerwowanych miejsc na dany warsztat
 	- dodawanie klienta /*
