@@ -320,6 +320,29 @@ BEGIN
 END
 GO
 
+-- anulowanie nieoplaconych w terminie rezerwacji
+CREATE PROCEDURE P_CancelUnpayedReservation
+AS
+BEGIN
+	DECLARE @ClientReservationID INT;
+
+	WHILE EXISTS (
+		SELECT * FROM Payments p
+		JOIN ClientReservations cr ON cr.ClientReservationID = p.PaymentID
+		WHERE p.FinePaid < p.FineAssessed AND p.DueDate < convert(date, getdate()) AND cr.IsCancelled = 0
+	)
+	BEGIN
+		SET @ClientReservationID = (
+			SELECT TOP 1 cr.ClientReservationID FROM Payments p
+			JOIN ClientReservations cr ON cr.ClientReservationID = p.PaymentID
+			WHERE p.FinePaid < p.FineAssessed AND p.DueDate < convert(date, getdate()) AND cr.IsCancelled = 0
+		);
+
+		EXEC P_CancelConferenceReservation @ClientReservationID; 
+	END
+END
+GO
+
 -- EXEC P_AddParticipant @Name = 'x8', @Surname = 'x7', @PhoneNumber = 111111117, @Email = 'x7@gmail.com', @City = 'xyz', @Country = 'Xyz'
 
 -- EXEC P_AddClient @ClientName = 'A', @ClientSurname = 'AB', @IsPrivate = 1, @PhoneNumber = 211111111, @Email = 'A1@gmail.com', @Address = 'a1a1', @City = 'a1a1', @PostalCode = 123123, @Country = 'ABAB';
