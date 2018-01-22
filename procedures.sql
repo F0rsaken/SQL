@@ -280,6 +280,46 @@ BEGIN
 END
 GO
 
+-- anulowanie rezerwacji warsztatu
+CREATE PROCEDURE P_CancelWorkshopResrvation
+	@WorkshopReservationID INT
+AS
+BEGIN
+	IF NOT EXISTS (
+		SELECT * FROM WorkshopsReservations
+		WHERE WorkshopReservationID = @WorkshopReservationID
+	)
+	BEGIN
+		RAISERROR ('Taka rezerwacja nie istnieje', -1, -1)
+		RETURN
+	END
+
+	IF (
+		SELECT IsCancelled FROM WorkshopsReservations
+		WHERE WorkshopReservationID = @WorkshopReservationID
+	) = 1
+	BEGIN
+		RAISERROR ('Ta rezerwacja jest juÅ¼ anulowana', -1, -1)
+		RETURN
+	END
+
+	UPDATE WorkshopsReservations
+		SET IsCancelled = 1
+		WHERE WorkshopReservationID = @WorkshopReservationID
+	
+	UPDATE ParticipantWorkshops
+		SET IsCancelled = 1
+		WHERE WorkshopReservationID = (
+			SELECT pw.WorkshopReservationID
+			FROM ParticipantWorkshops pw
+			JOIN Workshops w ON w.WorkshopID = pw.WorkshopID
+			JOIN WorkshopsReservations wr ON wr.WorkshopID = w.WorkshopID
+			WHERE wr.WorkshopReservationID = @WorkshopReservationID
+		)
+
+END
+GO
+
 -- EXEC P_AddParticipant @Name = 'x8', @Surname = 'x7', @PhoneNumber = 111111117, @Email = 'x7@gmail.com', @City = 'xyz', @Country = 'Xyz'
 
 -- EXEC P_AddClient @ClientName = 'A', @ClientSurname = 'AB', @IsPrivate = 1, @PhoneNumber = 211111111, @Email = 'A1@gmail.com', @Address = 'a1a1', @City = 'a1a1', @PostalCode = 123123, @Country = 'ABAB';
@@ -638,7 +678,7 @@ BEGIN
 			WHERE ClientReservationID = @ClientReservationID
 		) = 1
 	BEGIN
-		RAISERROR ('Ta rezerwacja zosta³a ju¿ anulowana.', -1, -1)
+		RAISERROR ('Ta rezerwacja zostaï¿½a juï¿½ anulowana.', -1, -1)
 		RETURN
 	END
 
