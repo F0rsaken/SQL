@@ -1,14 +1,66 @@
--- lista warsztatów w zależności od konferencji
-CREATE FUNCTION F_ShowWorkshops
+USE mmandows_a
+GO
+
+-- wszystkie opłaty klienta
+CREATE FUNCTION F_AllPaymentsByClientID
+	(
+		@ClientID int
+	)
+	RETURNS TABLE
+AS 
+	RETURN 
+		SELECT c.ClientID, c.ClientName, c.ClientSurname, conf.ConferenceID, conf.ConferenceName, p.FineAssessed, p.FinePaid
+		FROM Clients AS c
+		INNER JOIN ClientReservations AS cr
+				ON c.ClientID = cr.ClientID
+		INNER JOIN Payments AS p
+				ON cr.ClientReservationID = p.PaymentID
+		INNER JOIN Conferences AS conf
+				ON cr.ConferenceID = conf.ConferenceID
+		WHERE c.ClientID = @ClientID 
+				AND cr.IsCancelled = 0
+GO
+
+-- rezerwacje klienta
+CREATE FUNCTION F_ClientReservationsHistory
+	(
+		@ClientID int
+	)
+	RETURNS TABLE
+AS 
+	RETURN 
+		SELECT c.ClientID, c.ClientName, c.ClientSurname, cr.ConferenceID, cr.IsCancelled, conf.ConferenceName
+		FROM Clients AS c
+		INNER JOIN ClientReservations AS cr 
+				ON c.ClientID = cr.ClientID
+		INNER JOIN Conferences AS conf
+				ON cr.ConferenceID = conf.ConferenceID
+		WHERE c.ClientID = @ClientID
+GO
+
+--lista klientów na konferecje, którzy jeszcze nie zajeli wszystkich miejsc
+CREATE FUNCTION F_ClientsWithUnusedPlaces
     (
         @ConferenceID int
     )
     RETURNS TABLE
-AS
-RETURN
-    SELECT WorkshopID, WorkshopName
-    FROM Workshops
-    WHERE ConferenceID = @ConferenceID
+ AS
+ RETURN
+    SELECT dr.ConferenceDay, c.ClientName, (dr.NormalReservations + dr.StudentsReservations - (
+		SELECT COUNT(*)
+		FROM ParticipantReservations pr
+		WHERE pr.DayReservationID = dr.DayReservationID
+	)) as FreePlaces
+    FROM DaysReservations dr
+	JOIN ClientReservations cr
+	ON cr.ClientReservationID = dr.ClientReservationID
+	JOIN Clients c
+	ON c.ClientID = cr.ClientID
+	WHERE cr.ConferenceID = @ConferenceID AND (dr.NormalReservations + dr.StudentsReservations - (
+		SELECT COUNT(*)
+		FROM ParticipantReservations pr
+		WHERE pr.DayReservationID = dr.DayReservationID
+	)) != 0
 GO
 
 -- lista uczestników danej konferencji
@@ -61,60 +113,70 @@ RETURN
     ON c.ClientID = sub.ClientID
 GO
 
--- wszystkie stawki cenowe dla konferencji
-CREATE FUNCTION F_ShowPrices
-    (
-        @ConferenceID int
-    )
-    RETURNS TABLE
+-- każdy dzień konferencji z liczbą wolnych i zarezerwowanych miejsc
+CREATE FUNCTION F_FreeAndReservedPlacesForConference
+	(
+		@ConferenceID  int
+	)
+	RETURNS TABLE
 AS
-RETURN
-    SELECT p.PriceValue, p.PriceDate
-    FROM PriceList p
-    WHERE p.ConferenceID = @ConferenceID
+	RETURN
+		SELECT c.ConferenceName,
+			   dr.ConferenceDay,
+			   c.Places,
+			   c.Places - SUM(dr.NormalReservations + dr.StudentsReservations) AS FreePlaces,
+			   SUM(dr.NormalReservations + dr.StudentsReservations) AS ReservedPlaces
+			   
+		FROM Conferences AS c
+		INNER JOIN  ClientReservations AS cr
+				ON c.ConferenceID = cr.ConferenceID
+		INNER JOIN DaysReservations AS dr
+				ON cr.ClientReservationID = dr.ClientReservationID
+		WHERE c.ConferenceID = @ConferenceID
+				AND dr.IsCancelled = 0
+		GROUP BY dr.ConferenceDay, c.Places, c.ConferenceName
 GO
 
--- cena od konferencji w zaleźności od daty
-CREATE FUNCTION F_GetCurrentPrice
-    (
-        @ConferenceID int,
-        @CurrentDate date
-    )
-    RETURNS money
+-- lista warsztatów z liczbą wolnych i zarezerwowanych miejsc
+CREATE FUNCTION F_FreeAndReservedPlacesForWorkshop
+	(
+		@WorkshopID  int
+	)
+	RETURNS TABLE
 AS
-BEGIN
-    DECLARE @Price money;
-    SELECT TOP 1 @Price = PriceValue
-    FROM PriceList
-    WHERE @ConferenceID = ConferenceID AND @CurrentDate <= PriceDate
-    ORDER BY PriceDate;
-    RETURN @Price
-END
+	RETURN
+		SELECT w.WorkshopID,
+			   w.WorkshopName,
+			   w.Places,
+			   SUM(wr.NormalReservations) AS ReservedPlaces,
+			   w.Places - SUM(wr.NormalReservations) AS FreePlaces
+		FROM Workshops AS w
+		INNER JOIN WorkshopsReservations AS wr
+				ON w.WorkshopID = wr.WorkshopID
+		WHERE wr.IsCancelled = 0
+		AND w.WorkshopID = @WorkshopID
+		GROUP BY w.WorkshopID, w.Places, w.WorkshopName
 GO
 
---lista klientów na konferecje, którzy jeszcze nie zajeli wszystkich miejsc
-CREATE FUNCTION F_ClientsWithUnusedPlaces
-    (
-        @ConferenceID int
-    )
-    RETURNS TABLE
- AS
- RETURN
-    SELECT dr.ConferenceDay, c.ClientName, (dr.NormalReservations + dr.StudentsReservations - (
-		SELECT COUNT(*)
-		FROM ParticipantReservations pr
-		WHERE pr.DayReservationID = dr.DayReservationID
-	)) as FreePlaces
-    FROM DaysReservations dr
-	JOIN ClientReservations cr
-	ON cr.ClientReservationID = dr.ClientReservationID
-	JOIN Clients c
-	ON c.ClientID = cr.ClientID
-	WHERE cr.ConferenceID = @ConferenceID AND (dr.NormalReservations + dr.StudentsReservations - (
-		SELECT COUNT(*)
-		FROM ParticipantReservations pr
-		WHERE pr.DayReservationID = dr.DayReservationID
-	)) != 0
+-- opłaty klienta nieuregulowane
+CREATE FUNCTION F_NonregulatedPaymentsByClientID
+	(
+		@ClientID  int
+	)
+	RETURNS TABLE
+AS
+	RETURN
+		SELECT c.ClientID, c.ClientName, c.ClientSurname, conf.ConferenceID, conf.ConferenceName, p.FineAssessed, p.FinePaid
+		FROM Clients AS c
+		INNER JOIN ClientReservations AS cr
+				ON c.ClientID = cr.ClientID
+		INNER JOIN Payments AS p
+				ON cr.ClientReservationID = p.PaymentID
+		INNER JOIN Conferences AS conf
+				ON cr.ConferenceID = conf.ConferenceID
+		WHERE cr.IsCancelled = 0
+				AND p.FinePaid < p.FineAssessed
+				AND c.ClientID = @ClientID
 GO
 
 --lista uczestników na każdy dzień konferencji
@@ -161,73 +223,6 @@ AS
 				AND pw.IsCancelled = 0
 GO
 
--- każdy dzień konferencji z liczbą wolnych i zarezerwowanych miejsc
-CREATE FUNCTION F_FreeAndReservedPlacesForConference
-	(
-		@ConferenceID  int
-	)
-	RETURNS TABLE
-AS
-	RETURN
-		SELECT c.ConferenceName,
-			   dr.ConferenceDay,
-			   c.Places,
-			   c.Places - SUM(dr.NormalReservations + dr.StudentsReservations) AS FreePlaces,
-			   SUM(dr.NormalReservations + dr.StudentsReservations) AS ReservedPlaces
-			   
-		FROM Conferences AS c
-		INNER JOIN  ClientReservations AS cr
-				ON c.ConferenceID = cr.ConferenceID
-		INNER JOIN DaysReservations AS dr
-				ON cr.ClientReservationID = dr.ClientReservationID
-		WHERE c.ConferenceID = @ConferenceID
-				AND dr.IsCancelled = 0
-		GROUP BY dr.ConferenceDay, c.Places, c.ConferenceName
-GO
-
--- lista warsztatów z liczbą wolnych i zarezerwowanych miejsc
-CREATE FUNCTION F_FreeAndReservedPlacesForWorkshop
-	(
-		@WorkshopID  int
-	)
-	RETURNS TABLE
-AS
-	RETURN
-		SELECT w.WorkshopID,
-			   w.WorkshopName,
-			   w.Places,
-			   SUM(wr.NormalReservations) AS ReservedPlaces,
-			   w.Places - SUM(wr.NormalReservations) AS FreePlaces
-		FROM Workshops AS w
-		INNER JOIN WorkshopsReservations AS wr
-				ON w.WorkshopID = wr.WorkshopID
-		WHERE wr.IsCancelled = 0
-		AND w.WorkshopID = @WorkshopID
-		GROUP BY w.WorkshopID, w.Places, w.WorkshopName
-GO
-
-
--- opłaty klienta nieuregulowane
-CREATE FUNCTION F_NonregulatedPaymentsByClientID
-(
-		@ClientID  int
-	)
-	RETURNS TABLE
-AS
-	RETURN
-		SELECT c.ClientID, c.ClientName, c.ClientSurname, conf.ConferenceID, conf.ConferenceName, p.FineAssessed, p.FinePaid
-		FROM Clients AS c
-		INNER JOIN ClientReservations AS cr
-				ON c.ClientID = cr.ClientID
-		INNER JOIN Payments AS p
-				ON cr.ClientReservationID = p.PaymentID
-		INNER JOIN Conferences AS conf
-				ON cr.ConferenceID = conf.ConferenceID
-		WHERE cr.IsCancelled = 0
-				AND p.FinePaid < p.FineAssessed
-				AND c.ClientID = @ClientID
-GO
-
 -- opłaty klienta uregulowane
 CREATE FUNCTION F_RegulatedPaymentsByClientID
 	(
@@ -249,39 +244,46 @@ AS
 				AND p.FineAssessed <= FinePaid
 GO
 
--- wszystkie opłaty klienta
-CREATE FUNCTION F_AllPaymentsByClientID
-	(
-		@ClientID int
-	)
-	RETURNS TABLE
-AS 
-	RETURN 
-		SELECT c.ClientID, c.ClientName, c.ClientSurname, conf.ConferenceID, conf.ConferenceName, p.FineAssessed, p.FinePaid
-		FROM Clients AS c
-		INNER JOIN ClientReservations AS cr
-				ON c.ClientID = cr.ClientID
-		INNER JOIN Payments AS p
-				ON cr.ClientReservationID = p.PaymentID
-		INNER JOIN Conferences AS conf
-				ON cr.ConferenceID = conf.ConferenceID
-		WHERE c.ClientID = @ClientID 
-				AND cr.IsCancelled = 0
+-- wszystkie stawki cenowe dla konferencji
+CREATE FUNCTION F_ShowPrices
+    (
+        @ConferenceID int
+    )
+    RETURNS TABLE
+AS
+RETURN
+    SELECT p.PriceValue, p.PriceDate
+    FROM PriceList p
+    WHERE p.ConferenceID = @ConferenceID
 GO
 
--- rezerwacje klienta
-CREATE FUNCTION F_ClientReservationsHistory
-	(
-		@ClientID int
-	)
-	RETURNS TABLE
-AS 
-	RETURN 
-		SELECT c.ClientID, c.ClientName, c.ClientSurname, cr.ConferenceID, cr.IsCancelled, conf.ConferenceName
-		FROM Clients AS c
-		INNER JOIN ClientReservations AS cr 
-				ON c.ClientID = cr.ClientID
-		INNER JOIN Conferences AS conf
-				ON cr.ConferenceID = conf.ConferenceID
-		WHERE c.ClientID = @ClientID
+-- lista warsztatów w zależności od konferencji
+CREATE FUNCTION F_ShowWorkshops
+    (
+        @ConferenceID int
+    )
+    RETURNS TABLE
+AS
+RETURN
+    SELECT WorkshopID, WorkshopName
+    FROM Workshops
+    WHERE ConferenceID = @ConferenceID
+GO
+
+-- cena od konferencji w zaleźności od daty
+CREATE FUNCTION F_GetCurrentPrice
+    (
+        @ConferenceID int,
+        @CurrentDate date
+    )
+    RETURNS money
+AS
+BEGIN
+    DECLARE @Price money;
+    SELECT TOP 1 @Price = PriceValue
+    FROM PriceList
+    WHERE @ConferenceID = ConferenceID AND @CurrentDate <= PriceDate
+    ORDER BY PriceDate;
+    RETURN @Price
+END
 GO

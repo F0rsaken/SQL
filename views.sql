@@ -105,5 +105,3 @@ AS
 		   Country
 	FROM Clients
 GO
-
-
