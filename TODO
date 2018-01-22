@@ -25,10 +25,10 @@ ROLE:
 		- anulowanie rejestracji na warsztat
 
 1. Triggery (do poprawy)
-		- sprawdzanie czy wpisany dzien warsztatu jest jednym z dni konferencji
-		- sprawdzanie czy odpowiednio wstawiana jest cena
-		- sprawdzenie czy dany uczestnik jest zapisany na dzien konferencji przed dodaniem go na warsztat
-		- sprawdzenie czy sa wolne miejsca przed dodaniem uczestnika na warsztat
+		- sprawdzanie czy wpisany dzien warsztatu jest jednym z dni konferencji /*
+		- sprawdzanie czy odpowiednio wstawiana jest cena /*
+		- sprawdzenie czy dany uczestnik jest zapisany na dzien konferencji przed dodaniem go na warsztat /*
+		- sprawdzenie czy sa wolne miejsca przed dodaniem uczestnika na warsztat /*
 		- sprawdzanie czy klient prywatny ma nazwisko i czy firmowy go nie ma - /* 	
 		- anulowanie rezerwacji dni po anulowaniu rezerwacji konf. - /*
 		- anulowanie rezerwacji warsztatow po anulowaniu rezerwacji dnia - /*
