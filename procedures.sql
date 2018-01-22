@@ -334,7 +334,7 @@ BEGIN
 		FROM Payments
 		WHERE @PaymentID = PaymentID
 	)
-	SET @FineAssessed = (
+	SET @FinePaid = (
 		SELECT FinePaid
 		FROM Payments
 		WHERE @PaymentID = PaymentID
@@ -395,7 +395,7 @@ END
 GO
 
 -- anulowanie nieoplaconych w terminie rezerwacji
-CREATE PROCEDURE P_CancelUnpayedReservation
+CREATE PROCEDURE P_CancelUnpaiedReservation
 AS
 BEGIN
 	DECLARE @ClientReservationID INT;

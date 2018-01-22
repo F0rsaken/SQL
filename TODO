@@ -42,6 +42,10 @@ ROLE:
 		  lub zostalo podane wiecej miejsc niz zarezerwowano na konf. - /*
 		- blokowanie zmniejszenia liczby miejsc na konf. jezeli ilosc do tej pory zarezerwowanych miejsc jest wieksza od nowej liczby miejsc - /*
 		- blokowanie zmniejszenia liczby miejsc na warsztat jezeli ilosc do tej pory zarezerwowanych miejsc jest wieksza od nowej liczby miejsc - /*
+		- ParticipantsReservations blokuje dodanie, gdy nie ma już miejsc
+		- ParticipantsReservations - kontrola czy oba pola student zą wypełnione
+		- check w Workshops i Conferences
+		- trigger na: ClientsReservations, WorkshopsReservations, DaysReservations używający CountFine
 
 2. Widoki
 	-system (pani Ania)

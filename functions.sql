@@ -285,4 +285,3 @@ AS
 				ON cr.ConferenceID = conf.ConferenceID
 		WHERE c.ClientID = @ClientID
 GO
-
