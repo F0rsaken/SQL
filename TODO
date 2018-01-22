@@ -57,12 +57,12 @@ ROLE:
 	- usuwanie progu cenowego - Ś - /*
 	- zmiana informacji o konferencji w tym ilosci miejsc Ś - /*
 	- zmiana informacji o warsztacie w tym ilosci miejsc - Ś - /*
-	- dodawanie rezerwacji na konferencje - Ś
-	- dodawanie rezerwacji na dany dzien konferencji - Ś 
-	- dodawanie rezerwacji na warsztat - Ś
-	- dodawnie uczestnika na dany dzien konferencji - Ś
-	- dodawanie uczestnika na dany warsztat - Ś
-	- anulowanie rezerwacji na konferencje - Ś
+	- dodawanie rezerwacji na konferencje - Ś - /*
+	- dodawanie rezerwacji na dany dzien konferencji - Ś - /* 
+	- dodawanie rezerwacji na warsztat - Ś - /*
+	- dodawnie uczestnika na dany dzien konferencji - Ś -/*
+	- dodawanie uczestnika na dany warsztat - Ś - /*
+	- anulowanie rezerwacji na konferencje - Ś - /*
 	- anulowanie rezerwacji na dzien konferencji /* -- czy nie dać na trigger?
 	- anulowanie rezerwacji na warsztat -- trigger?
 	- anulowanie nieoplaconych w terminie rezerwacji -- trigger?
