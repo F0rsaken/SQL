@@ -111,6 +111,7 @@ BEGIN
 		)
 	BEGIN
 		RAISERROR ('Nie istnieje taki dzień', -1, -1)
+		RETURN
 	END
 
 	IF (
@@ -118,20 +119,100 @@ BEGIN
 		) = 1
 	BEGIN
 		RAISERROR ('Rezerwacja jest już anulowana', -1, -1)
+		RETURN
 	END
-	
-	BEGIN
-		UPDATE ParticipantReservations
-		SET IsCancelled = 1
-		WHERE DayReservationID = @DayReservationID
-		
-		UPDATE WorkshopsReservations
-		SET IsCancelled = 1
-		WHERE DayReservationID = @DayReservationID
 
-		-- update participantworkshops
-	END
+	UPDATE DaysReservations
+	SET IsCancelled = 1
+	WHERE DayReservationID = @DayReservationID
+		
 END	
+GO
+
+-- anulowanie rezerwacji warsztatu
+CREATE PROCEDURE P_CancelWorkshopResrvation
+	@WorkshopReservationID INT
+AS
+BEGIN
+	IF NOT EXISTS (
+		SELECT * FROM WorkshopsReservations
+		WHERE WorkshopReservationID = @WorkshopReservationID
+	)
+	BEGIN
+		RAISERROR ('Taka rezerwacja nie istnieje', -1, -1)
+		RETURN
+	END
+
+	IF (
+		SELECT IsCancelled FROM WorkshopsReservations
+		WHERE WorkshopReservationID = @WorkshopReservationID
+	) = 1
+	BEGIN
+		RAISERROR ('Ta rezerwacja jest już anulowana', -1, -1)
+		RETURN
+	END
+
+	UPDATE WorkshopsReservations
+		SET IsCancelled = 1
+		WHERE WorkshopReservationID = @WorkshopReservationID
+
+END
+GO
+
+-- anulowanie rezerwacji dnia uczestnika
+CREATE PROCEDURE P_CancelParticipantReservation
+	@ParticipantReservationID INT
+AS
+BEGIN
+	IF NOT EXISTS
+		(
+			SELECT * FROM ParticipantReservations WHERE ParticipantReservationID = @ParticipantReservationID
+		)
+	BEGIN
+		RAISERROR ('Nie istnieje taka rezerwacja', -1, -1)
+		RETURN
+	END
+
+	IF (
+		SELECT IsCancelled FROM ParticipantReservations WHERE ParticipantReservationID = @ParticipantReservationID
+		) = 1
+	BEGIN
+		RAISERROR ('Rezerwacja jest już anulowana', -1, -1)
+		RETURN
+	END
+
+	UPDATE ParticipantReservations
+	SET IsCancelled = 1
+	WHERE ParticipantReservationID = @ParticipantReservationID
+END
+GO
+
+-- anulowanie rezerwacji uczestnika na warsztat
+CREATE PROCEDURE P_CancelParticipantWorkshopReservation
+	@WorkshopReservationID INT
+AS
+BEGIN
+	IF NOT EXISTS
+		(
+			SELECT * FROM ParticipantWorkshops WHERE WorkshopReservationID = @WorkshopReservationID
+		)
+	BEGIN
+		RAISERROR ('Nie istnieje taka rezerwacja', -1, -1)
+		RETURN
+	END
+
+	IF (
+		SELECT IsCancelled FROM ParticipantWorkshops WHERE WorkshopReservationID = @WorkshopReservationID
+		) = 1
+	BEGIN
+		RAISERROR ('Rezerwacja jest już anulowana', -1, -1)
+		RETURN
+	END
+
+	UPDATE ParticipantWorkshops
+	SET IsCancelled = 1
+	WHERE WorkshopReservationID = @WorkshopReservationID
+END
 GO
 
 --dodawanie klienta
@@ -277,46 +358,6 @@ BEGIN
 	UPDATE Payments
 		SET FineAssessed = @Sum
 		WHERE PaymentID = @ClientReservationID
-END
-GO
-
--- anulowanie rezerwacji warsztatu
-CREATE PROCEDURE P_CancelWorkshopResrvation
-	@WorkshopReservationID INT
-AS
-BEGIN
-	IF NOT EXISTS (
-		SELECT * FROM WorkshopsReservations
-		WHERE WorkshopReservationID = @WorkshopReservationID
-	)
-	BEGIN
-		RAISERROR ('Taka rezerwacja nie istnieje', -1, -1)
-		RETURN
-	END
-
-	IF (
-		SELECT IsCancelled FROM WorkshopsReservations
-		WHERE WorkshopReservationID = @WorkshopReservationID
-	) = 1
-	BEGIN
-		RAISERROR ('Ta rezerwacja jest już anulowana', -1, -1)
-		RETURN
-	END
-
-	UPDATE WorkshopsReservations
-		SET IsCancelled = 1
-		WHERE WorkshopReservationID = @WorkshopReservationID
-	
-	UPDATE ParticipantWorkshops
-		SET IsCancelled = 1
-		WHERE WorkshopReservationID = (
-			SELECT pw.WorkshopReservationID
-			FROM ParticipantWorkshops pw
-			JOIN Workshops w ON w.WorkshopID = pw.WorkshopID
-			JOIN WorkshopsReservations wr ON wr.WorkshopID = w.WorkshopID
-			WHERE wr.WorkshopReservationID = @WorkshopReservationID
-		)
-
 END
 GO
 
