@@ -300,8 +300,8 @@ PRINT @FreePlaces
 */
 
 use 
--- blokuje rezerwacje lub update miejsc na warsztat jezeli nie ma juz tylu miejsc
-CREATE TRIGGER T_NoFreePlacesForWorkshop
+-- blokuje rezerwacje lub update miejsc na warsztat jezeli nie ma juz tylu miejsc lub zostalo podane wiecej miejsc niz zarezerwowane na konf.
+CREATE TRIGGER T_ControlPlacesForWorkshop
 	ON WorkshopsReservations
 	AFTER UPDATE, INSERT
 AS
@@ -310,13 +310,33 @@ BEGIN
 	DECLARE @WorkshopID	int
 		= ( SELECT WorkshopID FROM inserted)
 
-	DECLARE @Places	int
+	DECLARE @IncreaseOfPlaces	int
+		= ( SELECT i.NormalReservations - d.NormalReservations 
+			FROM inserted AS i
+			INNER JOIN deleted AS d 
+					ON i.WorkshopReservationID = d.WorkshopReservationID
+		  )
+
+	DECLARE @FinalNumbnerOfPlaces	int
 		= ( SELECT NormalReservations FROM inserted)
+
+	DECLARE @DayReservationID	int
+		= ( SELECT DayReservationID FROM inserted)
+
+	DECLARE @ReservedPlacesForConferenceDay	int
+		= ( SELECT NormalReservations + StudentsReservations FROM DaysReservations WHERE DayReservationID = @DayReservationID)
+
+
+	IF @FinalNumbnerOfPlaces > @ReservedPlacesForConferenceDay
+	BEGIN
+		RAISERROR ('Nie zarezerwowano tylu miejsc na ten dzien konferencji.', -1, -1)
+		ROLLBACK TRANSACTION
+	END
 
 	DECLARE @FreePlaces	int
 		= ( SELECT FreePlaces FROM F_FreeAndReservedPlacesForWorkshop (@WorkshopID))
 
-	IF @Places > @FreePlaces
+	IF @IncreaseOfPlaces > @FreePlaces
 	BEGIN
 		RAISERROR ('Nie ma tylu wolnych miejsc na ten warsztat.', -1, -1)
 		ROLLBACK TRANSACTION
@@ -324,13 +344,32 @@ BEGIN
 
 END
 GO
+
 /*test
-UPDATE WorkshopsReservations
-	SET NormalReservations = 15
-	WHERE WorkshopReservationID = 2 
+ 
 select *
 from WorkshopsReservations
 
 select *
+from DaysReservations
+where DayReservationID =2
+
+update DaysReservations
+	SET IsCancelled = 0
+	WHERE DayReservationID = 2
+
+update DaysReservations
+	SET NormalReservations = 2
+	WHERE DayReservationID =2
+
+
+update DaysReservations
+	SET StudentsReservations = 0
+	WHERE DayReservationID =2
+
+
+select *
 from F_FreeAndReservedPlacesForWorkshop(2)
 */
+
+
