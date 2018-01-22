@@ -1,6 +1,8 @@
 -- ============================
 -- Triggery od anulowania 
 -- ============================
+USE mmandows_a
+GO
 
 CREATE TRIGGER T_ControlClientSurnameAndIsPrivateStatus
 	ON Clients
@@ -23,7 +25,7 @@ BEGIN
 
 	IF @IsPrivate = 0 AND @ClientSurname IS NOT NULL
 	BEGIN
-		RAISERROR ('Dla klienta firmowego nie nale�y podawa� nazwiska.', -1, -1)
+		RAISERROR ('Dla klienta firmowego nie nale�y podawa� nazwiska.', -1, -1)
 		ROLLBACK TRANSACTION
 	END
 
@@ -407,6 +409,58 @@ exec P_ChangeConferenceDetails @ConferenceID =1, @StartDate = NULL, @EndDate = N
 */
 go
 
+-- sprawdzanie, czy wpis do PriceList jet dobry
+CREATE TRIGGER T_CheckPriceListInsert
+	ON PriceList
+	AFTER INSERT
+AS
+BEGIN
+	DECLARE @PriceDate DATE
+		= (SELECT PriceDate FROM inserted)
+	DECLARE @PriceValue money
+		= (SELECT PriceValue FROM inserted)
+	DECLARE @ConferenceID INT
+		= (SELECT ConferenceID FROM inserted)
+
+	IF @PriceDate >= (SELECT StartDate FROM Conferences WHERE ConferenceID = @ConferenceID)
+	BEGIN
+		RAISERROR ('Data ceny jest późniejsza niż początek konferencji', -1, -1)
+		ROLLBACK TRANSACTION
+	END
+
+	IF EXISTS (
+		SELECT * FROM PriceList
+		WHERE PriceDate < @PriceDate AND ConferenceID = @ConferenceID
+	)
+	BEGIN
+		IF @PriceValue <= (
+			SELECT TOP 1 PriceValue FROM PriceList
+			WHERE PriceDate < @PriceDate AND ConferenceID = @ConferenceID
+			ORDER BY PriceDate DESC
+		)
+		BEGIN
+			RAISERROR ('Cena dla tej daty jest za mała', -1, -1)
+			ROLLBACK TRANSACTION
+		END
+	END
+
+	IF EXISTS (
+		SELECT * FROM PriceList
+		WHERE PriceDate > @PriceDate AND ConferenceID = @ConferenceID
+	)
+	BEGIN
+		IF @PriceValue >= (
+			SELECT TOP 1 PriceValue FROM PriceList
+			WHERE PriceDate > @PriceDate AND ConferenceID = @ConferenceID
+			ORDER BY PriceDate
+		)
+		BEGIN
+			RAISERROR ('Cena dla tej daty jest za duża', -1, -1)
+			ROLLBACK TRANSACTION
+		END
+	END	
+END
+GO
 -- blokuje zmniejszenie liczby miejsc na warsztat jezeli ilosc do tej pory zarezerwowanych miejsc jest wieksza od nowej liczby dostepnych miejsc
 CREATE TRIGGER T_ControlUpdatingPlacesForWorkshop
 	ON Workshops
@@ -444,3 +498,77 @@ go
 
 
 -- blokuje zm
+
+--sprawdzanie czy wpisany dzien warsztatu jest jednym z dni konferencji
+USE mmandows_a
+GO
+
+CREATE TRIGGER T_CheckIfWorkshopDayBelongsToConferenceDay
+	ON Workshops
+	AFTER INSERT
+AS
+BEGIN
+	DECLARE @ConferenceDay INT
+		= ( SELECT datediff(day, StartDate, EndDate)
+		FROM Conferences
+		WHERE ConferenceID = (
+				SELECT ConferenceID
+				FROM inserted
+			)
+		)
+	SET @ConferenceDay += 1
+
+	IF @ConferenceDay < (
+		SELECT ConferenceDay
+		FROM inserted
+	)
+	BEGIN
+		RAISERROR ('Konferencja nie ma tylu dni', -1, -1)
+		ROLLBACK TRANSACTION
+	END
+END
+GO
+
+-- sprawdzenie czy można dodać uczestnika na warsztat
+CREATE TRIGGER T_CheckIfParticipantCanBeAdded
+	ON ParticipantWorkshops
+	AFTER INSERT
+AS
+BEGIN
+
+	DECLARE @ParticipantReservationID INT
+		= (SELECT ParticipantReservationID FROM inserted)
+	DECLARE @WorkshopID INT
+		= (SELECT WorkshopID FROM inserted)
+	DECLARE @DayReservationID INT
+		= ( SELECT DayReservationID FROM ParticipantReservations
+			WHERE ParticipantReservationID = @ParticipantReservationID )
+
+	IF NOT EXISTS (
+		SELECT * FROM ParticipantReservations pr
+		JOIN DaysReservations dr ON dr.DayReservationID = pr.DayReservationID
+		JOIN WorkshopsReservations wr ON wr.DayReservationID = dr.DayReservationID
+		WHERE wr.WorkshopID = @WorkshopID AND pr.ParticipantReservationID = @ParticipantReservationID
+			AND pr.IsCancelled = 0 AND wr.IsCancelled = 0
+	)
+	BEGIN
+		RAISERROR ('Klient nie zrobił rezerwacji na ten warsztat', -1, -1)
+		ROLLBACK TRANSACTION
+	END
+
+	IF (
+		SELECT count(*) FROM DaysReservations dr
+		JOIN ParticipantReservations pr ON pr.DayReservationID = dr.DayReservationID
+		JOIN ParticipantWorkshops pw ON pw.ParticipantReservationID = pr.ParticipantReservationID
+		WHERE dr.DayReservationID = @DayReservationID AND pw.WorkshopID = @WorkshopID
+	) >= (
+		SELECT wr.NormalReservations FROM WorkshopsReservations wr
+		JOIN DaysReservations dr ON dr.DayReservationID = wr.DayReservationID
+		WHERE dr.DayReservationID = @DayReservationID AND wr.WorkshopID = @WorkshopID
+	)
+	BEGIN
+		RAISERROR ('Nie można się już zapisać na warsztat', -1, -1)
+		ROLLBACK TRANSACTION
+	END
+END
+GO
