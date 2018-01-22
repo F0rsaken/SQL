@@ -73,7 +73,7 @@ ROLE:
 	- dodawanie klienta /*
 	- dodawanie uczestnika /*
 	- sprawdzanie statusu opłaty klienta /*
-	- wyliczenie opłaty za rezerwacje konferencji
+	- wyliczenie opłaty za rezerwacje konferencji /*
 
 4. Funkcje
 	- lista warsztatów w zależności od konferencji /*
