@@ -491,4 +491,3 @@ from F_FreeAndReservedPlacesForWorkshop(3)
 select * 
 from Workshops
 */
-use
