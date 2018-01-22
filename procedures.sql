@@ -544,7 +544,6 @@ BEGIN
 END
 GO
 
-
 -- dodawanie uczestnika na dany warsztat 
 CREATE PROCEDURE P_AddParticipantForWorkshop
 	@ParticipantReservationID	int,
