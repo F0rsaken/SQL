@@ -40,6 +40,8 @@ ROLE:
 		  albo tylu ile chce klient - /*
 		- blokowanie rezerwacji lub zmiany ilosci miejsc na warsztat jezeli nie ma juz tylu miejsc
 		  lub zostalo podane wiecej miejsc niz zarezerwowano na konf. - /*
+		- blokowanie zmniejszenia liczby miejsc na konf. jezeli ilosc do tej pory zarezerwowanych miejsc jest wieksza od nowej liczby miejsc - /*
+		- blokowanie zmniejszenia liczby miejsc na warsztat jezeli ilosc do tej pory zarezerwowanych miejsc jest wieksza od nowej liczby miejsc - /*
 
 2. Widoki
 	-system (pani Ania)
