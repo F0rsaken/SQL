@@ -252,15 +252,9 @@ BEGIN
 	DECLARE @ConferenceID	int
 		= ( SELECT ConferenceID FROM ClientReservations WHERE ClientReservationID = @ClientReservationID)
 
-	PRINT @ClientReservationID
-	PRINT @Places
-	PRINT @ConferenceID
-	PRINT @ConferenceDay
-
 	DECLARE @FreePlaces	int
 		= ( SELECT FreePlaces FROM F_FreeAndReservedPlacesForConference (@ConferenceID) WHERE ConferenceDay = @ConferenceDay)
-	
-	PRINT @FreePlaces
+
 
 	IF @Places > @FreePlaces
 	BEGIN
@@ -270,7 +264,6 @@ BEGIN
 
 END
 GO
-
 /*test
 drop trigger T_NoPlacesForConferenceDay
 
@@ -283,7 +276,7 @@ from Conferences
 select *
 from ClientReservations
 
-exec P_AddReservationForConferenceDay @ClientReservationID = 4, @ConferenceDay = 2, @NormalReservations = 30, @StudentReservations = 11;
+exec P_AddReservationForConferenceDay @ClientReservationID = 4, @ConferenceDay = 3, @NormalReservations = 30, @StudentReservations = 11;
 
 select *
 from DaysReservations as dr
@@ -304,4 +297,40 @@ DECLARE @FreePlaces	int
 	= (SELECT FreePlaces FROM F_FreeAndReservedPlacesForConference (@ConferenceID) WHERE ConferenceDay = @ConferenceDay)
 
 PRINT @FreePlaces
+*/
+
+use 
+-- blokuje rezerwacje lub update miejsc na warsztat jezeli nie ma juz tylu miejsc
+CREATE TRIGGER T_NoFreePlacesForWorkshop
+	ON WorkshopsReservations
+	AFTER UPDATE, INSERT
+AS
+BEGIN
+	
+	DECLARE @WorkshopID	int
+		= ( SELECT WorkshopID FROM inserted)
+
+	DECLARE @Places	int
+		= ( SELECT NormalReservations FROM inserted)
+
+	DECLARE @FreePlaces	int
+		= ( SELECT FreePlaces FROM F_FreeAndReservedPlacesForWorkshop (@WorkshopID))
+
+	IF @Places > @FreePlaces
+	BEGIN
+		RAISERROR ('Nie ma tylu wolnych miejsc na ten warsztat.', -1, -1)
+		ROLLBACK TRANSACTION
+	END
+
+END
+GO
+/*test
+UPDATE WorkshopsReservations
+	SET NormalReservations = 15
+	WHERE WorkshopReservationID = 2 
+select *
+from WorkshopsReservations
+
+select *
+from F_FreeAndReservedPlacesForWorkshop(2)
 */

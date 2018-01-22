@@ -28,19 +28,19 @@ ROLE:
 		- sprawdzanie czy wpisany dzien warsztatu jest jednym z dni konferencji
 		- sprawdzanie czy data obowiazywania progu cenowego nie jest mniejsza od poprzedniej 
 			i wieksza od daty konca konferencji 
-		- sprawdzanie czy ilosc miejsc ktore ktos chce zarezerwowac miesci sie w wolnych 
-			do zarezerwowania miejscach
-		- to samo dla warsztatu
 		- sprawdzenie czy dany uczestnik jest zapisany na dzien konferencji przed dodaniem go na warsztat
-		- sprawdzenie czy sa wolne miejsca przed dodaniem na warsztat
-		- przy anulowaniu rezerwacji na konferencje - anulowanie rezerwacji na dni, warsztaty, 
-			anulowanie rezerwacji uczestnikow na dni konf. i warsztaty
+		- sprawdzenie czy sa wolne miejsca przed dodaniem uczestnika na warsztat
 		- sprawdzanie czy klient prywatny ma nazwisko i czy firmowy go nie ma - /* 	
 		- anulowanie rezerwacji dni po anulowaniu rezerwacji konf. - /*
 		- anulowanie rezerwacji warsztatow po anulowaniu rezerwacji dnia - /*
 		- anulowanie zapisow uczestnika na warsztaty po anulowaniu rezerwacji na warsztat - /*
 		- anulowanie zapisow uczestnika na warsztaty po anulowaniu rezerwacji na dzien konf. - /*
 		- anulowanie zapisow uczestnika na dzien konf. po anulowaniu rezerwacji na dzien konf. - /*
+		- blokowanie rezerwacji na konferencje jezeli na zadne dzien nie ma juz wolnych miejsc - /*
+		- blokowanie rezerwacji lub zmiany ilosci miejsc na dany dzien konferencji jezeli nie ma juz wolnych miejsc 
+		  albo tylu ile chce klient - /*
+		- blokowanie rezerwacji lub zmiany ilosci miejsc na warsztat jezeli nie ma juz tylu miejsc
+		  lub zostalo podane wiecej miejsc niz zarezerwowano na konf. - /*
 
 2. Widoki
 	-system (pani Ania)

@@ -196,7 +196,8 @@ AS
 		SELECT w.WorkshopID,
 			   w.WorkshopName,
 			   w.Places,
-			   SUM(wr.NormalReservations) AS ReservedPlaces
+			   SUM(wr.NormalReservations) AS ReservedPlaces,
+			   w.Places - SUM(wr.NormalReservations) AS FreeSpaces
 		FROM Workshops AS w
 		INNER JOIN WorkshopsReservations AS wr
 				ON w.WorkshopID = wr.WorkshopID
@@ -204,7 +205,6 @@ AS
 		AND w.WorkshopID = @WorkshopID
 		GROUP BY w.WorkshopID, w.Places, w.WorkshopName
 GO
-
 -- opłaty klienta nieuregulowane
 CREATE FUNCTION F_NonregulatedPaymentsByClientID
 (
