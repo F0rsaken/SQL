@@ -1,6 +1,8 @@
 -- ============================
 -- Triggery od anulowania 
 -- ============================
+USE mmandows_a
+GO
 
 CREATE TRIGGER T_ControlClientSurnameAndIsPrivateStatus
 	ON Clients
@@ -23,7 +25,7 @@ BEGIN
 
 	IF @IsPrivate = 0 AND @ClientSurname IS NOT NULL
 	BEGIN
-		RAISERROR ('Dla klienta firmowego nie nale�y podawa� nazwiska.', -1, -1)
+		RAISERROR ('Dla klienta firmowego nie nale�y podawa� nazwiska.', -1, -1)
 		ROLLBACK TRANSACTION
 	END
 
@@ -299,7 +301,6 @@ DECLARE @FreePlaces	int
 PRINT @FreePlaces
 */
 
-use 
 -- blokuje rezerwacje lub update miejsc na warsztat jezeli nie ma juz tylu miejsc
 CREATE TRIGGER T_NoFreePlacesForWorkshop
 	ON WorkshopsReservations
@@ -334,3 +335,56 @@ from WorkshopsReservations
 select *
 from F_FreeAndReservedPlacesForWorkshop(2)
 */
+
+-- sprawdzanie, czy wpis do PriceList jet dobry
+CREATE TRIGGER T_CheckPriceListInsert
+	ON PriceList
+	AFTER INSERT
+AS
+BEGIN
+	DECLARE @PriceDate DATE
+		= (SELECT PriceDate FROM inserted)
+	DECLARE @PriceValue money
+		= (SELECT PriceValue FROM inserted)
+	DECLARE @ConferenceID INT
+		= (SELECT ConferenceID FROM inserted)
+
+	IF @PriceDate >= (SELECT StartDate FROM Conferences WHERE ConferenceID = @ConferenceID)
+	BEGIN
+		RAISERROR ('Data ceny jest późniejsza niż początek konferencji', -1, -1)
+		ROLLBACK TRANSACTION
+	END
+
+	IF EXISTS (
+		SELECT * FROM PriceList
+		WHERE PriceDate < @PriceDate AND ConferenceID = @ConferenceID
+	)
+	BEGIN
+		IF @PriceValue <= (
+			SELECT TOP 1 PriceValue FROM PriceList
+			WHERE PriceDate < @PriceDate AND ConferenceID = @ConferenceID
+			ORDER BY PriceDate DESC
+		)
+		BEGIN
+			RAISERROR ('Cena dla tej daty jest za mała', -1, -1)
+			ROLLBACK TRANSACTION
+		END
+	END
+
+	IF EXISTS (
+		SELECT * FROM PriceList
+		WHERE PriceDate > @PriceDate AND ConferenceID = @ConferenceID
+	)
+	BEGIN
+		IF @PriceValue >= (
+			SELECT TOP 1 PriceValue FROM PriceList
+			WHERE PriceDate > @PriceDate AND ConferenceID = @ConferenceID
+			ORDER BY PriceDate
+		)
+		BEGIN
+			RAISERROR ('Cena dla tej daty jest za duża', -1, -1)
+			ROLLBACK TRANSACTION
+		END
+	END	
+END
+GO
