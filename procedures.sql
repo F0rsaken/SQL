@@ -97,6 +97,39 @@ BEGIN
 END
 GO
 
+-- zmiana ilosci zarezerwowanych miejsc na dany dzien konferencji
+CREATE PROCEDURE P_ChangeDayReservationPlaces
+	@DayReservationID INT,
+	@NumberOfPlaces INT,
+	@IsStudent BIT
+AS
+BEGIN
+	IF @IsStudent = 0
+	BEGIN
+		UPDATE DaysReservations
+		SET NormalReservations = @NumberOfPlaces
+		WHERE DayReservationID = @DayReservationID
+		RETURN
+	END
+
+	UPDATE DaysReservations
+	SET StudentsReservations = @NumberOfPlaces
+	WHERE DayReservationID = @DayReservationID
+END
+GO
+
+-- zmiana ilosci zarezerwowanych miejsc na dany warsztat
+CREATE PROCEDURE P_ChangeWorkshopReservationPlaces
+	@WorkshopReservationID INT,
+	@NumberOfPlaces INT
+AS
+BEGIN
+	UPDATE WorkshopReservations
+	SET NormalReservations = @NumberOfPlaces
+	WHERE WorkshopReservationID = @WorkshopReservationID
+END
+GO
+
 -- EXEC P_AddPriceToConferencePriceList @ConferenceID = 4, @PriceValue = 200, @PriceDate = '2001-04-13';
 -- EXEC P_DeletePriceFromConferencePriceList @PriceID = 16;
 
@@ -457,7 +490,7 @@ CREATE PROCEDURE P_ChangeWorkshopDetails
 	@WorkshopStart  time,
 	@WorkshopEnd    time
 AS
-BEGIN 
+BEGIN
 	IF NOT EXISTS
 		( 
 			SELECT *
