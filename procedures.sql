@@ -121,10 +121,6 @@ BEGIN
 	END
 	
 	BEGIN
-		UPDATE DaysReservations
-		SET IsCancelled = 1
-		WHERE DayReservationID = @DayReservationID
-
 		UPDATE ParticipantReservations
 		SET IsCancelled = 1
 		WHERE DayReservationID = @DayReservationID
@@ -232,17 +228,55 @@ BEGIN
 
 	IF @FineAssessed > @FinePaid
 	BEGIN
-		RAISERROR ('Klient jeszcze nie zapÅ‚aciÅ‚', -1, -1)
+		PRINT 'Klient jeszcze nie zapÅ‚aciÅ‚'
 		RETURN
 	END
 
 	IF @FineAssessed = @FinePaid
 	BEGIN
-		RAISERROR ('Klient zapÅ‚aciÅ‚', -1, -1)
+		PRINT 'Klient zapÅ‚aciÅ‚'
 		RETURN
 	END
 
-	RAISERROR ('Klient nadpÅ‚aciÅ‚', -1, -1)
+	PRINT 'Klient nadpÅ‚aciÅ‚'
+END
+GO
+
+-- wylicznanie ceny dla klienta
+CREATE PROCEDURE P_CountFine
+	@ClientReservationID INT,
+	@ConferenceID INT
+AS
+BEGIN
+	DECLARE @CurrentPrice money, @Sum money, @Discount float(10);
+	SET @CurrentPrice = dbo.F_GetCurrentPrice(@ConferenceID, (
+		SELECT ReservationDate
+		FROM ClientReservations
+		WHERE @ClientReservationID = ClientReservationID
+	));
+	SET @Discount = (
+		SELECT Discount
+		FROM Conferences
+		WHERE ConferenceID = @ConferenceID
+	);
+
+	SET @Sum = (
+		SELECT ((SUM(NormalReservations) + (SUM(StudentsReservations) * (1 - @Discount))) * @CurrentPrice) as NumberOfPlaces
+		FROM DaysReservations
+		WHERE @ClientReservationID = ClientReservationID
+		GROUP BY ClientReservationID
+	) + (
+		SELECT SUM(wr.NormalReservations * w.WorkshopFee)
+		FROM WorkshopsReservations wr
+		JOIN DaysReservations dr ON dr.DayReservationID = wr.DayReservationID
+		JOIN Workshops w ON w.WorkshopID = wr.WorkshopID
+		WHERE dr.ClientReservationID = @ClientReservationID
+		GROUP BY dr.ClientReservationID
+	);
+
+	UPDATE Payments
+		SET FineAssessed = @Sum
+		WHERE PaymentID = @ClientReservationID
 END
 GO
 
@@ -384,7 +418,7 @@ BEGIN
 				AND IsCancelled = 0
 		)
 	BEGIN
-		RAISERROR ('Klient o podanym ID juz rejestrowa³ siê na konferencjê o podanym ID', -1, -1)
+		RAISERROR ('Klient o podanym ID juz rejestrowaï¿½ siï¿½ na konferencjï¿½ o podanym ID', -1, -1)
 		RETURN
 	END
 	INSERT INTO ClientReservations (ConferenceID, ClientID)
@@ -417,7 +451,7 @@ BEGIN
 				AND IsCancelled		  = 0
 		)
 	BEGIN
-		RAISERROR ('Ten klient dokonywa³ ju¿ rejestracji na ten dzieñ konferencji', -1, -1)
+		RAISERROR ('Ten klient dokonywaï¿½ juï¿½ rejestracji na ten dzieï¿½ konferencji', -1, -1)
 		RETURN
 	END
 
@@ -458,7 +492,7 @@ BEGIN
 				AND IsCancelled	   = 0
 		)
 	BEGIN
-		RAISERROR ('Ten klient rezerwowa³ juz miejsca na ten warsztat', -1, -1)
+		RAISERROR ('Ten klient rezerwowaï¿½ juz miejsca na ten warsztat', -1, -1)
 		RETURN
 	END
 
@@ -497,7 +531,7 @@ BEGIN
 				AND IsCancelled		 = 0
 		)
 		BEGIN
-			RAISERROR ('Podany uczestnik jest ju¿ zarejestrowany na ten dzieñ konferencji.', -1, -1)
+			RAISERROR ('Podany uczestnik jest juï¿½ zarejestrowany na ten dzieï¿½ konferencji.', -1, -1)
 			RETURN
 		END
 	
@@ -560,7 +594,7 @@ BEGIN
 				AND IsCancelled			   = 0
 		)
 	BEGIN
-		RAISERROR ('Podany uczestnik rezerwowa³ jest ju¿ zarejestrowany na ten warsztat.', -1, -1)
+		RAISERROR ('Podany uczestnik rezerwowaï¿½ jest juï¿½ zarejestrowany na ten warsztat.', -1, -1)
 		RETURN
 	END
 
