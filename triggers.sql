@@ -1,3 +1,7 @@
+-- ============================
+-- Triggery od anulowania 
+-- ============================
+
 CREATE TRIGGER T_ControlClientSurnameAndIsPrivateStatus
 	ON Clients
 	AFTER INSERT, UPDATE
@@ -29,7 +33,6 @@ GO
 EXEC P_AddClient @ClientName = 'TriggerTest', @ClientSurname = NULL, @IsPrivate = 0, @PhoneNumber = 123123123, @Email = 'triggertest12@gmail.com', @Address = 'triggerAdress', @City = 'Trigger', @PostalCode = 123123, @Country = 'Trigger';
 GO
 */
-
 
 CREATE TRIGGER T_CancelAllDaysReservations
 	ON ClientReservations
@@ -194,3 +197,111 @@ inner join ParticipantWorkshops as pw
 */
 
 
+
+use mmandows_a
+go
+-- ============================
+-- Triggery od wolnych miejsc
+-- ============================
+
+-- blokuje rezerwacje na konferencje jezeli na zaden dzien nie ma juz wolnych miejsc
+CREATE TRIGGER T_NoFreePlacesForAnyConferenceDay
+	ON ClientReservations
+	AFTER INSERT
+AS
+BEGIN
+
+	DECLARE @ConferenceID	int
+		= (SELECT ConferenceID FROM inserted)
+
+	IF 
+		(
+			SELECT COUNT(*)
+			FROM F_FreeAndReservedPlacesForConference (@ConferenceID)
+				WHERE FreePlaces > 0
+		) = 0
+	BEGIN
+		RAISERROR ('Nie ma juz wolnych miejsc na zaden dzien tej konferencji.', -1, -1)
+		ROLLBACK TRANSACTION
+	END
+		
+END
+GO
+
+-- blokuje rezerwacje lub zmiane ilosci miejsc na dany dzien konferencji jezeli nie ma juz wolnych miejsc lub nie ma juz tylu wolnych miejsc ile chce klient
+CREATE TRIGGER T_NoPlacesForConferenceDay
+	ON DaysReservations
+	AFTER INSERT, UPDATE 
+AS
+BEGIN
+
+	DECLARE @ClientReservationID	int
+		= ( SELECT ClientReservationID FROM inserted)
+
+	DECLARE @ConferenceDay	int
+		= ( SELECT ConferenceDay FROM inserted)
+
+	DECLARE @Places	int
+		= ( 
+				SELECT i.NormalReservations + i.StudentsReservations - d.NormalReservations - d.StudentsReservations 
+				FROM inserted AS i 
+				INNER JOIN deleted AS d 
+						ON i.DayReservationID = d.DayReservationID
+		  )
+
+	DECLARE @ConferenceID	int
+		= ( SELECT ConferenceID FROM ClientReservations WHERE ClientReservationID = @ClientReservationID)
+
+	PRINT @ClientReservationID
+	PRINT @Places
+	PRINT @ConferenceID
+	PRINT @ConferenceDay
+
+	DECLARE @FreePlaces	int
+		= ( SELECT FreePlaces FROM F_FreeAndReservedPlacesForConference (@ConferenceID) WHERE ConferenceDay = @ConferenceDay)
+	
+	PRINT @FreePlaces
+
+	IF @Places > @FreePlaces
+	BEGIN
+		RAISERROR ('Nie ma tylu wolnych miejsc na ten dzien konferencji.', -1, -1)
+		ROLLBACK TRANSACTION
+	END
+
+END
+GO
+
+/*test
+drop trigger T_NoPlacesForConferenceDay
+
+SELECT *
+FROM F_FreeAndReservedPlacesForConference (1)
+
+select *
+from Conferences
+
+select *
+from ClientReservations
+
+exec P_AddReservationForConferenceDay @ClientReservationID = 4, @ConferenceDay = 2, @NormalReservations = 30, @StudentReservations = 11;
+
+select *
+from DaysReservations as dr
+inner join ClientReservations as cr 
+	on dr.ClientReservationID = cr.ClientReservationID
+where dr.ClientReservationID = 4
+	and ConferenceDay =2
+
+UPDATE DaysReservations
+	SET NormalReservations = 60
+	WHERE ClientReservationID = 4
+		AND ConferenceDay = 2
+
+
+DECLARE @ConferenceID	int = 1
+DECLARE @ConferenceDay	int = 2
+DECLARE @FreePlaces	int
+	= (SELECT FreePlaces FROM F_FreeAndReservedPlacesForConference (@ConferenceID) WHERE ConferenceDay = @ConferenceDay)
+
+PRINT @FreePlaces
+*/
