@@ -35,7 +35,12 @@ ROLE:
 		- sprawdzenie czy sa wolne miejsca przed dodaniem na warsztat
 		- przy anulowaniu rezerwacji na konferencje - anulowanie rezerwacji na dni, warsztaty, 
 			anulowanie rezerwacji uczestnikow na dni konf. i warsztaty
-		-  	
+		- sprawdzanie czy klient prywatny ma nazwisko i czy firmowy go nie ma - /* 	
+		- anulowanie rezerwacji dni po anulowaniu rezerwacji konf. - /*
+		- anulowanie rezerwacji warsztatow po anulowaniu rezerwacji dnia - /*
+		- anulowanie zapisow uczestnika na warsztaty po anulowaniu rezerwacji na warsztat - /*
+		- anulowanie zapisow uczestnika na warsztaty po anulowaniu rezerwacji na dzien konf. - /*
+		- anulowanie zapisow uczestnika na dzien konf. po anulowaniu rezerwacji na dzien konf. - /*
 
 2. Widoki
 	-system (pani Ania)
