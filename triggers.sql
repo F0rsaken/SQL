@@ -264,6 +264,7 @@ BEGIN
 
 END
 GO
+
 /*test
 drop trigger T_NoPlacesForConferenceDay
 
@@ -298,8 +299,8 @@ DECLARE @FreePlaces	int
 
 PRINT @FreePlaces
 */
-
 use 
+
 -- blokuje rezerwacje lub update miejsc na warsztat jezeli nie ma juz tylu miejsc lub zostalo podane wiecej miejsc niz zarezerwowane na konf.
 CREATE TRIGGER T_ControlPlacesForWorkshop
 	ON WorkshopsReservations
@@ -371,5 +372,72 @@ update DaysReservations
 select *
 from F_FreeAndReservedPlacesForWorkshop(2)
 */
+use
 
+-- blokuje zmniejszenie liczby miejsc na konferencje jezeli ilosc do tej pory zarezerwowanych miejsc jest wieksza od nowej liczby dostepnych miejsc
+CREATE TRIGGER T_ControlUpdatingPlacesForConference
+	ON Conferences
+	AFTER UPDATE
+AS
+BEGIN
 
+	DECLARE @ConferenceID	int
+		= ( SELECT ConferenceID FROM inserted)
+
+	DECLARE @NewPlaces	int
+		= ( SELECT Places FROM inserted)
+
+	DECLARE @ReservedPlaces	int
+		= ( SELECT TOP 1 ReservedPlaces FROM F_FreeAndReservedPlacesForConference (@ConferenceID) ORDER BY ReservedPlaces DESC)
+
+	IF @NewPlaces < @ReservedPlaces
+	BEGIN
+		RAISERROR ('Nowa ilosc dostepnych miejsc jest mniejsza od juz zarezerwowanej.', -1, -1)
+		ROLLBACK TRANSACTION
+	END
+
+END
+GO
+
+/*test
+select *
+from F_FreeAndReservedPlacesForConference(1)
+
+exec P_ChangeConferenceDetails @ConferenceID =1, @StartDate = NULL, @EndDate = NULL, @Places = 40, @Discount = 0.25;
+*/
+use
+
+-- blokuje zmniejszenie liczby miejsc na warsztat jezeli ilosc do tej pory zarezerwowanych miejsc jest wieksza od nowej liczby dostepnych miejsc
+CREATE TRIGGER T_ControlUpdatingPlacesForWorkshop
+	ON Workshops
+	AFTER UPDATE
+AS
+BEGIN
+	
+	DECLARE @WorkshopID	int
+		= ( SELECT WorkshopID FROM inserted)
+
+	DECLARE @NewPlaces	int
+		= ( SELECT Places FROM inserted)
+
+	DECLARE @ReservedPlaces	int
+		= ( SELECT ReservedPlaces FROM F_FreeAndReservedPlacesForWorkshop (@WorkshopID))
+	
+	IF @NewPlaces < @ReservedPlaces
+	BEGIN
+		RAISERROR ('Nowa ilosc dostepnych miejsc jest mniejsza od juz zarezerwowanej.', -1, -1)
+		ROLLBACK TRANSACTION
+	END
+
+END
+GO
+/*test
+exec P_ChangeWorkshopDetails @WorkshopID = 3, @ConferenceDay = NULL, @Places = 9, @WorkshopStart = NULL, @WorkshopEnd =  NULL;
+
+select *
+from F_FreeAndReservedPlacesForWorkshop(3)
+
+select * 
+from Workshops
+*/
+use
