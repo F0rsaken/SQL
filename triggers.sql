@@ -504,6 +504,11 @@ BEGIN
 		OR (@StudentCard IS NOT NULL AND @StudentCardDate IS NULL)
 	BEGIN
 		RAISERROR ('Prosz� wype�nic wszystkie pola przeznaczone dla studenta.', -1, -1)
+		ROLLBACK TRANSACTION
+	END
+END
+GO
+
 -- blokuje zmniejszenie liczby miejsc na warsztat jezeli ilosc do tej pory zarezerwowanych miejsc jest wieksza od nowej liczby dostepnych miejsc
 CREATE TRIGGER T_ControlUpdatingPlacesForWorkshop
 	ON Workshops
