@@ -705,11 +705,14 @@ GO
 
 -- wylicznanie ceny dla klienta
 CREATE PROCEDURE P_CountFine
-	@ClientReservationID INT,
-	@ConferenceID INT
+	@ClientReservationID INT
 AS
 BEGIN
 	DECLARE @CurrentPrice money, @Sum money, @Discount float(10);
+	DECLARE @ConferenceID INT
+		= ( SELECT ConferenceID
+			FROM ClientReservations
+			WHERE ClientReservationID = @ClientReservationID )
 	SET @CurrentPrice = dbo.F_GetCurrentPrice(@ConferenceID, (
 		SELECT ReservationDate
 		FROM ClientReservations
@@ -724,14 +727,14 @@ BEGIN
 	SET @Sum = (
 		SELECT ((SUM(NormalReservations) + (SUM(StudentsReservations) * (1 - @Discount))) * @CurrentPrice) as NumberOfPlaces
 		FROM DaysReservations
-		WHERE @ClientReservationID = ClientReservationID
+		WHERE @ClientReservationID = ClientReservationID AND IsCancelled = 0
 		GROUP BY ClientReservationID
 	) + (
 		SELECT SUM(wr.NormalReservations * w.WorkshopFee)
 		FROM WorkshopsReservations wr
 		JOIN DaysReservations dr ON dr.DayReservationID = wr.DayReservationID
 		JOIN Workshops w ON w.WorkshopID = wr.WorkshopID
-		WHERE dr.ClientReservationID = @ClientReservationID
+		WHERE dr.ClientReservationID = @ClientReservationID AND wr.IsCancelled = 0
 		GROUP BY dr.ClientReservationID
 	);
 
