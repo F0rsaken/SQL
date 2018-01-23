@@ -283,6 +283,48 @@ BEGIN
 END
 GO
 
+-- blokuje zmniejszenie liczby miejsc na warsztat jezeli ilosc do tej pory zarezerwowanych miejsc jest wieksza od nowej liczby dostepnych miejsc
+CREATE TRIGGER T_ControlUpdatingPlacesForWorkshop
+	ON Workshops
+	AFTER UPDATE
+AS
+BEGIN
+	
+	DECLARE @WorkshopID	int
+		= ( SELECT WorkshopID FROM inserted)
+
+	DECLARE @NewPlaces	int
+		= ( SELECT Places FROM inserted)
+
+	DECLARE @ReservedPlaces	int
+		= ( SELECT ReservedPlaces FROM F_FreeAndReservedPlacesForWorkshop (@WorkshopID))
+	
+	IF @NewPlaces < @ReservedPlaces
+	BEGIN
+		RAISERROR ('Nowa ilosc dostepnych miejsc jest mniejsza od juz zarezerwowanej.', -1, -1)
+		ROLLBACK TRANSACTION
+	END
+
+END
+GO
+/*test
+exec P_ChangeWorkshopDetails @WorkshopID = 3, @ConferenceDay = NULL, @Places = 9, @WorkshopStart = NULL, @WorkshopEnd =  NULL;
+
+select *
+from F_FreeAndReservedPlacesForWorkshop(3)
+
+select * 
+from Workshops
+*/
+go
+
+
+-- blokuje zm
+
+--sprawdzanie czy wpisany dzien warsztatu jest jednym z dni konferencji
+USE mmandows_a
+GO
+
 CREATE TRIGGER T_CheckIfWorkshopDayBelongsToConferenceDay
 	ON Workshops
 	AFTER INSERT
@@ -382,6 +424,86 @@ BEGIN
 END
 GO
 
+-- blokuje dodanie uczestnika na dzien konferencji jezeli zostaly wykorzystane miejsca zarezerwowane przez klienta
+CREATE TRIGGER T_ControlFreePlacesReservedByClientForConferenceDay
+	ON ParticipantReservations
+	AFTER INSERT
+AS
+BEGIN
+	
+	DECLARE @DayReservationID	int
+		= ( SELECT DayReservationID FROM inserted)
+
+	DECLARE @IsStudent	bit
+
+	-- sprawdzenie czy dodawany uczestnik to student
+	IF ( SELECT StudentCard FROM inserted ) IS NULL
+	BEGIN
+		SET @IsStudent = 0
+	END
+
+	IF ( SELECT StudentCard FROM inserted ) IS NOT NULL
+	BEGIN
+		SET @IsStudent = 1
+	END
+
+	DECLARE @NormalReservations	int
+		= ( SELECT NormalReservations FROM DaysReservations WHERE DayReservationID = @DayReservationID)
+
+	DECLARE @StudentsReservations	int
+		= ( SELECT StudentsReservations FROM DaysReservations WHERE DayReservationID = @DayReservationID)
+
+	DECLARE @UsedNormalReservations	int
+		= ( 
+				SELECT COUNT(*)
+				FROM ParticipantReservations
+				WHERE DayReservationID = @DayReservationID
+					AND IsCancelled = 0
+					AND StudentCard IS NULL 
+		  )
+
+	DECLARE @UsedStudentsReservations	int
+		= ( 
+				SELECT COUNT(*)
+				FROM ParticipantReservations
+				WHERE DayReservationID = @DayReservationID
+					AND IsCancelled = 0
+					AND StudentCard IS NOT NULL 
+		  )
+
+
+	IF @IsStudent = 0 AND @UsedNormalReservations = @NormalReservations
+	BEGIN
+		RAISERROR ('Wszystkie normalne rezerwacje zostaly juz wykorzystane na ten dzien konferencji.', -1, -1)
+		ROLLBACK TRANSACTION
+	END
+
+	IF @IsStudent = 1 AND @UsedStudentsReservations = @StudentsReservations
+	BEGIN
+		RAISERROR ('Wszystkie rezerwacje dla student�w zostaly juz wykorzystane na ten dzien konferencji.', -1, -1)
+		ROLLBACK TRANSACTION
+	END
+
+END
+GO
+
+-- kontrola pol StudentCard i StudentCardDate
+CREATE TRIGGER T_ControlStudentsCardFieldsFilling
+	ON ParticipantReservations
+	AFTER INSERT, UPDATE
+AS
+BEGIN
+	
+	DECLARE @StudentCard	int
+		= ( SELECT StudentCard FROM inserted )
+
+	DECLARE @StudentCardDate	date
+		= ( SELECT StudentCardDate FROM inserted )
+
+	IF (@StudentCard IS NULL AND @StudentCardDate IS NOT NULL)
+		OR (@StudentCard IS NOT NULL AND @StudentCardDate IS NULL)
+	BEGIN
+		RAISERROR ('Prosz� wype�nic wszystkie pola przeznaczone dla studenta.', -1, -1)
 -- blokuje zmniejszenie liczby miejsc na warsztat jezeli ilosc do tej pory zarezerwowanych miejsc jest wieksza od nowej liczby dostepnych miejsc
 CREATE TRIGGER T_ControlUpdatingPlacesForWorkshop
 	ON Workshops
@@ -403,6 +525,58 @@ BEGIN
 		RAISERROR ('Nowa ilosc dostepnych miejsc jest mniejsza od juz zarezerwowanej.', -1, -1)
 		ROLLBACK TRANSACTION
 	END
+
+END
+GO
+
+-- zerowanie op�aty po anulowaniu rezerwacji na konf
+CREATE TRIGGER T_DeleteFineAssesdAfterCancelingConferenceReservation
+	ON ClientReservations
+	AFTER UPDATE
+AS
+BEGIN
+	DECLARE @ClientReservationID	int
+		= ( SELECT ClientReservationID FROM inserted WHERE IsCancelled = 1)
+	
+	IF @ClientReservationID IS NOT NULL
+	BEGIN
+		UPDATE Payments
+		SET FineAssessed = 0
+		WHERE PaymentID = @ClientReservationID
+	END
+
+END
+GO
+
+-- wyliczanie oplaty po zarezerwowaniu lub anulowaniu miejsc na warsztaty
+CREATE TRIGGER T_CountFineAfterWorkhopReservationOrUpdate
+	ON WorkshopsReservations
+	AFTER INSERT, UPDATE
+AS
+BEGIN
+	
+	DECLARE @DayReservationID	int
+		= ( SELECT DayReservationID FROM inserted)
+
+	DECLARE @ClientReservationID	int
+		= ( SELECT ClientReservationID FROM DaysReservations WHERE DayReservationID = @DayReservationID)
+
+	EXEC P_CountFine @ClientReservationID = @ClientReservationID;
+
+END
+GO
+
+-- wyliczanie op�at po zarezerwowaniu lub anulowaniu miejsc na dzien konf
+CREATE TRIGGER T_CountFineAfterConferenceDayReservationOrUpdate
+	ON DaysReservations
+	AFTER INSERT, UPDATE
+AS
+BEGIN
+	
+	DECLARE @ClientReservationID	int
+		= ( SELECT ClientReservationID FROM inserted)
+
+	EXEC P_CountFine @ClientReservationID = @ClientReservationID;
 
 END
 GO
