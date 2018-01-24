@@ -3,7 +3,6 @@ DECLARE @Iterator	INT
 	 = 1
 
 DECLARE @PriceValue MONEY
-	= 50
 
 DECLARE @FirstDate	DATE
 DECLARE @SecondDate	DATE
@@ -19,6 +18,8 @@ WHILE @Iterator IN
 	)
 BEGIN	
 	
+	SET @PriceValue = RAND()*100+10
+
 	SET @ConferenceDate =
 		(
 			SELECT StartDate

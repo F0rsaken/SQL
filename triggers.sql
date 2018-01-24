@@ -585,3 +585,43 @@ BEGIN
 
 END
 GO
+
+-- tworzenie pola oplat
+CREATE TRIGGER T_CreatePaymentField
+	ON dbo.ClientReservations
+	AFTER INSERT
+AS
+BEGIN
+	
+	DECLARE @PaymentID	INT
+		= ( 
+				SELECT ClientReservationID
+				FROM Inserted
+		  )
+	
+	DECLARE @ReservationDate DATE
+		= (
+				SELECT ReservationDate 
+				FROM Inserted
+		  )
+
+	DECLARE @DueDate	DATE
+		= DATEADD(DAY, 7, @ReservationDate)
+
+
+	INSERT INTO dbo.Payments
+	(
+	    PaymentID,
+		FineAssessed,
+	    FinePaid,
+	    DueDate
+	)
+	VALUES
+	(   
+		@PaymentID,
+		0,     -- FineAssessed - money
+	    0,     -- FinePaid - money
+	    @DueDate -- DueDate - date
+	)
+END
+GO
