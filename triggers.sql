@@ -297,7 +297,7 @@ BEGIN
 		= ( SELECT Places FROM inserted)
 
 	DECLARE @ReservedPlaces	int
-		= ( SELECT ReservedPlaces FROM F_FreeAndReservedPlacesForWorkshop (@WorkshopID))
+		= ( SELECT TOP 1 ReservedPlaces FROM F_FreeAndReservedPlacesForWorkshop (@WorkshopID) ORDER BY ReservedPlaces DESC)
 	
 	IF @NewPlaces < @ReservedPlaces
 	BEGIN
@@ -424,6 +424,7 @@ BEGIN
 END
 GO
 
+DROP TRIGGER T_ControlFreePlacesReservedByClientForConferenceDay
 -- blokuje dodanie uczestnika na dzien konferencji jezeli zostaly wykorzystane miejsca zarezerwowane przez klienta
 CREATE TRIGGER T_ControlFreePlacesReservedByClientForConferenceDay
 	ON ParticipantReservations
