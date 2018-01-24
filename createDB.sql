@@ -69,10 +69,10 @@ CREATE TABLE ParticipantWorkshops (
 	PRIMARY KEY (WorkshopReservationID));
 
 CREATE TABLE Payments (
-	PaymentID int IDENTITY(1,1) NOT NULL,
+	PaymentID int UNIQUE NOT NULL,
 	FineAssessed money NOT NULL DEFAULT 0,
 	FinePaid money NOT NULL DEFAULT 0,
-	DueDate date NOT NULL DEFAULT DATEADD( day, 7, Convert(date, getdate())),
+	DueDate date NOT NULL,
 	PRIMARY KEY (PaymentID));
 
 CREATE TABLE PriceList (

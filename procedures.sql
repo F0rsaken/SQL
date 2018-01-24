@@ -724,7 +724,7 @@ BEGIN
 		WHERE ConferenceID = @ConferenceID
 	);
 
-	SET @Sum = (
+	SET @Sum = ISNULL((
 		SELECT ((SUM(NormalReservations) + (SUM(StudentsReservations) * (1 - @Discount))) * @CurrentPrice) as NumberOfPlaces
 		FROM DaysReservations
 		WHERE @ClientReservationID = ClientReservationID AND IsCancelled = 0
@@ -736,7 +736,7 @@ BEGIN
 		JOIN Workshops w ON w.WorkshopID = wr.WorkshopID
 		WHERE dr.ClientReservationID = @ClientReservationID AND wr.IsCancelled = 0
 		GROUP BY dr.ClientReservationID
-	);
+	),0);
 
 	UPDATE Payments
 		SET FineAssessed = @Sum
