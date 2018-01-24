@@ -30,6 +30,7 @@ CREATE TABLE Conferences (
 	EndDate date NOT NULL,
 	Places int NOT NULL CHECK (Places > 0),
 	Discount float(10) NOT NULL DEFAULT 0 CHECK (Discount <= 1),
+	CHECK (StartDate <= EndDate),
 	PRIMARY KEY (ConferenceID));
 
 CREATE TABLE DaysReservations (
@@ -90,6 +91,7 @@ CREATE TABLE Workshops (
 	WorkshopFee money NOT NULL,
 	WorkshopStart time NOT NULL,
 	WorkshopEnd time NOT NULL,
+	CHECK (WorkshopStart < WorkshopEnd),
 	PRIMARY KEY (WorkshopID));
 
 CREATE TABLE WorkshopsReservations (

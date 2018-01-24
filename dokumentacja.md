@@ -1,23 +1,138 @@
 <div id = "grafika" style = "text-align:center; width:400px; height:550px; margin:auto;">
-<!-- ![agh_nzw_s_pl_3w_wbr_rgb_150ppi.jpg](C:\Users\mike\Documents\SQLProject\agh_nzw_s_pl_3w_wbr_rgb_150ppi.jpg) -->
+![LogoAGH.jpg](.\LogoAGH.jpg)
 </div>
 <h1 style = "text-align:center">Laboratorium Podstaw Baz Danych <br/>Dokumentacja Systemu zarządzania konferencjami</h1>
-<h3 style = "text-align:right">Miłosz Mandowski <br/>Michał Śledź</h3>
+<p style = "text-align:right; font-size:25px;">Miłosz Mandowski<br/>Michał Śledź</p>
 
 #Spis treści
 * Ogólne informacje
 * Schemat bazy danych
-<a href="#Tabele">
+* Specyfikacja wymagań
 * Tabele
-</a>
-	* cos 
-	* cos
-<a href="#Triggery">
+	* Clients 
+	* Conferences 
+	* DaysReservations 
+	* ParticipantReservations 
+	* Participants 
+	* ParticipantWorkshops 
+	* Payments 
+	* PriceList 
+	* Workshops 
+	* WorkshopsReservations 
+* Kod tworzący klucze obce
+* Kod usuwający wszystkie tabele
 * Triggery
-</a>
- 	* trig 1
- 	* trig 2
- 	
+	* T_CancelAllDaysReservations
+	* T_NoFreePlacesForAnyConferenceDay
+	* T_ControlClientSurnameAndIsPrivateStatus
+	* T_ControlUpdatingPlacesForConference
+	* T_CancelAllParticipantConferenceDayReservations
+	* T_CancelAllWorkshopsReservations
+	* T_NoPlacesForConferenceDay
+	* T_CancelAllParticipantWorkshopsReservations1
+	* T_CheckIfParticipantCanBeAdded
+	* T_CheckPriceListInsert
+	* T_ControlUpdatingPlacesForWorkshop
+	* T_CheckIfWorkshopDayBelongsToConferenceDay
+	* T_ControlPlacesForWorkshop
+	* T_CancelAllParticipantWorkshopsReservations2
+	* T_ControlFreePlacesReservedByClientForConferenceDay
+	* T_ControlStudentsCardFieldsFilling
+	* T_ControlUpdatingPlacesForWorkshop
+	* T_DeleteFineAssesdAfterCancelingConferenceReservation
+	* T_CountFineAfterWorkhopReservationOrUpdate
+	* T_CountFineAfterConferenceDayReservationOrUpdate
+* Procedury
+	* P_AddClient
+	* P_AddConference
+	* P_AddParticipant
+	* P_AddParticipantForConferenceDay
+	* P_AddParticipantForWorkshop
+	* P_AddPriceToConferencePriceList
+	* P_AddReservationForConference
+	* P_AddReservationForConferenceDay
+	* P_AddReservationForWorkshop
+	* P_AddWorkshop
+	* P_CancelConferenceReservation
+	* P_CancelDayReservation
+	* P_CancelParticipantReservation
+	* P_CancelParticipantWorkshopReservation
+	* P_CancelUnpaiedReservation
+	* P_CancelWorkshopResrvation
+	* P_ChangeConferenceDetails
+	* P_ChangeDayReservationPlaces
+	* P_ChangeWorkshopDetails
+	* P_ChangeWorkshopReservationPlaces
+	* P_CheckCurrentPayment
+	* P_CountFine
+	* P_DeletePriceFromConferencePriceList
+* Funkcje
+	* F_AllPaymentsByClientID
+	* F_ClientReservationsHistory
+	* F_ClientsWithUnusedPlaces
+	* F_ConferenceParticipants
+	* F_CreatePeopleIdentifiers
+	* F_FreeAndReservedPlacesForConference
+	* F_FreeAndReservedPlacesForWorkshop
+	* F_NonregulatedPaymentsByClientID
+	* F_ParticipantsListForConferenceDay
+	* F_ParticipantsListForWorkshop
+	* F_RegulatedPaymentsByClientID
+	* F_ShowPrices
+	* F_ShowWorkshops
+	* F_GetCurrentPrice
+* Widoki
+	* V_MostFrequentClients 
+	* V_MostProfitableClients
+	* V_UnpayedCancelledReservations
+	* V_UnpayedNotCancelledReservations
+	* V_OverPayedReservations
+	* V_PayedReservations
+	* V_CancelledConferencesReseravtions
+	* V_ClientsList
+* Indeksy
+* Role
+	* Administrator
+	* Pracownik
+	* Klient
+	* Uczestnik 
+
+<p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</p>
 
 #Ogólne informacje
 Firma organizuje konferencje, które mogą być jedno- lub kilkudniowe. Klienci
@@ -31,11 +146,27 @@ identyfikator imienny (+ ew. informacja o firmie na nim). Dla konferencji kilkud
 uczestnicy mogą rejestrować się na dowolne z tych dni.
 
 #Schemat bazy danych
-<!-- ![Entity Relationship Diagram1.png](C:\Users\mike\Documents\SQLProject\Entity Relationship Diagram1.png) -->
+![DataBaseDiagram.png](.\DataBaseDiagram.png)
 
-<a name="Tabele">
+<p>
+
+
+
+</p>
+
+#Specyfikacja wymagań
+Podczas analizowania wymagań systemu natknęliśmy się na kilka brzegowych sytuacji. Poniżej przedstawiamy je wraz z ich rozwiązaniem.
+* przechowywanie informacji o statusie uczestnika tj. czy jest studentem czy też nie. Nr legitymacji studenckiej i jej datę ważności nalezy zawsze podać podczas zapisu uczestnika na dany dzień konferencji. Wyklucza to sytuację, w której osoba X kiedyś studiowała, ale obecnie już nie studiuje.
+* zmiana nazwy/tematu konferencji lub tematu warsztatu. Nie jest możliwe takie działanie. System nie pozwala na zmianę tematu konferencji lub tematu warsztatu. Mogłoby to spowodować duże zamieszanie, w sytuacji kiedy część uczestników dokonała już wpisu na jeden z warsztatów, po czym został zmieniony jego temat.
+* ilość miejsc na poszczególne dni konferencji. Zakładamy, że na każdy dzień konferencji dostępnych jest tyle samo miejsc. Informacja o dostępnych miejscach jest przechowywana w tabeli Conferences
+* liczba dostępnych miejsc na warsztat może być różna dla każdego warsztatu
+* nie ma możliwości zmiany wartości progu cenowego. W przypadku pomyłki można go jedynie usunąć, nie można naotmiast zmienić jego wartości
+* raz dodany klient lub uczestnik do bazy nie jest do niej wprowadzany ponownie przy rezerwacjach na kolejne konferencje
+* w przypadku anulowania przez klienta rezerwacji na konferencję, w sytuacji kiedy opłacił już zarezerwowane miejsca, wartość należnej opłaty w tabeli Payments zostaje ustawiona na 0, a sama nadpłata zwracana jest klientowi
+* system raz dziennie sprawdza czy są rezerwacje, które nie zostały opłacone w terminie. Jeżeli takowe są anuluje je. Całe działanie wykonuje procedura ```P_CancelUnpaiedReservation```
+* opłata należna za zarezerwowane miejsca na konferencję i warsztaty wyliczana jest systematycznie, przy dokonaniu rezerwacji na konferencję, warsztat, ich modyfikacji oraz anulowaniu
+
 #Tabele
-</a>
 <h6>
 Clients - tabela zawierająca informacje o klientach. Zawiera pola
 * ClientID - identyfikator klienta, unikatowy, zaczyna się od 1, inkrementowany o 1
@@ -63,12 +194,14 @@ CREATE TABLE Clients (
 	Country varchar(30) NOT NULL,
 	PRIMARY KEY (ClientID));
 ```
-<h6>Conferences - tabela zawierająca informacje o konferencjach. Zawiera pola
-* ConferenceID - identyfikator konferencji, unikatowy, zaczyna się od 1, inkrementowany o 1
-* ConferenceName - temat konferencji
-* StartDate - data rozpoczęcia konferencji w formacie ```yyyy-mm-dd```
-* EndDate - data zakończenia konferencji w formacie ```yyyy-mm-dd```
-* Discount - zniżka dla studentów. Domyślnie wartość ustawiona na 0. Musi być mniejsza lub równa 1.
+<br />
+<h6>
+Conferences - tabela zawierająca informacje o konferencjach. Zawiera pola:
+	* ConferenceID - identyfikator konferencji, unikatowy, zaczyna się od 1, inkrementowany o 1
+	* ConferenceName - temat konferencji
+	* StartDate - data rozpoczęcia konferencji w formacie ```yyyy-mm-dd```
+	* EndDate - data zakończenia konferencji w formacie ```yyyy-mm-dd```
+	* Discount - zniżka dla studentów. Domyślnie wartość ustawiona na 0. Musi być mniejsza lub równa 1.
 </h6>
 ```sql
 CREATE TABLE Conferences (
@@ -77,8 +210,11 @@ CREATE TABLE Conferences (
 	StartDate date NOT NULL,
 	EndDate date NOT NULL,
 	Discount float(4) NOT NULL DEFAULT 0 CHECK (Discount <= 1),
+    CHECK (StartDate <= EndDate),
 	PRIMARY KEY (ConferenceID));
 ```
+
+<br />
 <h6>ClientReservations - przechowuje informacje o rezerwacji klienta na daną konferencję. Zawiera pola:
 * ClientReservationID - identyfikator rezerwacji, unikatowy, zaczyna się od 1, inkrementowany o 1
 * ConferenceID - identyfikator konferencji
@@ -93,6 +229,8 @@ CREATE TABLE ClientReservations (
 	ReservationDate date NOT NULL DEFAULT Convert(date, getdate()),
 	PRIMARY KEY (ClientReservationID));
 ```
+
+<br />
 <h6>DaysReservations - przechowuje informacje o rezerwacjach klientów na konkretne dni konferencji. Zawiera pola:
 * DayReservationID - identyfikator rezerwacji na dany dzień, unikatowy, zaczyna się od 1, inkrementowany o 1
 * ClientReservationID - identyfikator klienta 
@@ -109,6 +247,8 @@ CREATE TABLE DaysReservations (
 	StudentsReservations int NOT NULL DEFAULT 0,
 	PRIMARY KEY (DayReservationID));
 ```
+
+<br />
 <h6>ParticipantReservations - przechowuje informacje o zapisach uczestników na dany dzień konferencji. Zawiera pola:
 * ParticipantReservationID - identyfikator rezerwacji uczestnika, unikatowy, zaczyna się od 1, inkrementowany o 1
 * ParticipantID - identyfikator uczestnika
@@ -125,6 +265,8 @@ CREATE TABLE ParticipantReservations (
 	StudentCardDate date NULL,
 	PRIMARY KEY (ParticipantReservationID));
 ```
+
+<br />
 <h6>Participants - przechowuje informacje o uczestnikach konferencji. Zawiera pola:
 * ParticipantID - identyfikator uczestnika, unikatowy, zaczyna się od 1, inkrementowany o 1
 * Name - imię uczestnika
@@ -147,6 +289,8 @@ CREATE TABLE Participants (
 	DiscountGranted bit NOT NULL DEFAULT 0,
 	PRIMARY KEY (ParticipantID));
 ```
+
+<br />
 <h6>ParticipantWorkshops - przechowuje informacje o zapisach uczestników na warsztaty. Zawiera pola:
 * WorkshopReservationID - identyfikator rezerwacji na warsztat, unikatowy, zaczyna się od 1, inkrementowany o 1
 * ParticipantReservationID - identyfikator rezerwacji uczestnika na dany dzień konferencji
@@ -159,6 +303,8 @@ CREATE TABLE ParticipantWorkshops (
 	WorkshopID int NOT NULL,
 	PRIMARY KEY (WorkshopReservationID));
 ```
+
+<br />
 <h6>Payments - przechowuje informacje o opłatach nałożonych na klientów, za dokonane rezerwacje miejsc na konferencje i warsztaty. Zawiera pola:
 * PaymentID - identyfikator opłaty, unikatowy zaczyna się od 1, inkrementowany o 1 
 * FineAssessed - należna opłata za rezerwacje miejsc na konferencję i warsztaty
@@ -173,6 +319,8 @@ CREATE TABLE Payments (
 	DueDate date NOT NULL,
 	PRIMARY KEY (PaymentID));
 ```
+
+<br />
 <h6>PriceList - przechowuje informacje o cenach za rezerwacje na konferencję w zależności od daty dokonania rezerwacji. Zawiera pola:
 * PriceID - identyfikator opłaty
 * ConferenceID - identyfikator konferencji
@@ -187,6 +335,8 @@ CREATE TABLE PriceList (
 	PriceDate date NOT NULL,
 	PRIMARY KEY (PriceID));
 ```
+
+<br />
 <h6>Workshops - przechowuje informacje o warsztatach. Zawiera pola:
 * WorkshopID - identyfikator warsztatu, unikatowy, zaczyna się od 1, inkrementowany o 1
 * ConferenceID - identyfikator konferencji
@@ -207,8 +357,11 @@ CREATE TABLE Workshops (
 	WorkshopFee money NOT NULL,
 	WorkshopStart time NOT NULL,
 	WorkshopEnd time NOT NULL,
+   	CHECK (WorkshopStart < WorkshopEnd),
 	PRIMARY KEY (WorkshopID));
 ```
+
+<br />
 <h6>WorkshopsReservations - przechowuje infomacje o rezerwacjach miejsc na warsztaty przez klientó. Zawiera pola:
 * WorkshopReservationID - identyfikator rezerwacji na warsztat, unikatowy, zaczyna się od 1, inkrementowany o 1
 * DayReservationID - identyfikator rezerwacji klienta na dany dzień
@@ -224,6 +377,7 @@ CREATE TABLE WorkshopsReservations (
 	PRIMARY KEY (WorkshopReservationID));
 ```
 
+#Kod tworzący klucze obce
 ```sql
 -- =========================================
 -- Creating Keys
@@ -277,6 +431,8 @@ ALTER TABLE Workshops
 	ADD CONSTRAINT FKWorkshopsToConferences
 	FOREIGN KEY (ConferenceID) REFERENCES Conferences (ConferenceID);
 ```
+
+#Kod usuwający wszystkie tabele
 ```sql
 -- =========================================
 -- Drop code
@@ -331,11 +487,9 @@ DROP TABLE Workshops;
 DROP TABLE WorkshopsReservations;
 ```
 
-
-
-<a name="Triggery">
 #Triggery
-</a>
+
+<b>T_CancelAllDaysReservations - </b>Anuluje wszystkie rezerwacje na dni konferencji, po anulowaniu rezerwacji na samą konferencję.
 
 ```sql
 CREATE TRIGGER T_CancelAllDaysReservations
@@ -355,8 +509,10 @@ END
 GO
 ```
 
+<br />
+<b>T_NoFreePlacesForAnyConferenceDay - </b>Blokuje rezerwacje na konferencję jeęeli na żaden dzień nie ma już wolnych miejsc.
+
 ```sql
--- blokuje rezerwacje na konferencje jezeli na zaden dzien nie ma juz wolnych miejsc
 CREATE TRIGGER T_NoFreePlacesForAnyConferenceDay
 	ON ClientReservations
 	AFTER INSERT
@@ -380,6 +536,9 @@ BEGIN
 END
 GO
 ```
+
+<br />
+<b>T_ControlClientSurnameAndIsPrivateStatus - </b>Sprawdza czy podano nazwisko dla klienta prywatnego i czy nie podano nazwiska dla klienta firmowego.
 
 ```sql
 CREATE TRIGGER T_ControlClientSurnameAndIsPrivateStatus
@@ -411,8 +570,11 @@ END
 GO
 ```
 
+<br />
+<b>T_ControlUpdatingPlacesForConference - </b>Blokuje zmniejszenie liczby miejsc na konferencje jeżeli ilość do tej pory zarezerwowanych miejsc jest większa od nowo podanej liczby miejsc.
+
+
 ```sql
--- blokuje zmniejszenie liczby miejsc na konferencje jezeli ilosc do tej pory zarezerwowanych miejsc jest wieksza od nowej liczby dostepnych miejsc
 CREATE TRIGGER T_ControlUpdatingPlacesForConference
 	ON Conferences
 	AFTER UPDATE
@@ -438,6 +600,9 @@ END
 GO
 ```
 
+<br />
+<b>T_CancelAllParticipantConferenceDayReservations - </b>Anuluje wszystkie zapisy uczestników od klienta na dzień konferencji, na który klient anulował swoją rezerwację.
+
 ```sql
 CREATE TRIGGER T_CancelAllParticipantConferenceDayReservations
 	ON DaysReservations
@@ -457,6 +622,9 @@ BEGIN
 END
 GO
 ```
+
+<br />
+<b>T_CancelAllWorkshopsReservations - </b>Anuluje wszystkie rezerwacje klienta na warsztaty z danego dnia, jeżeli klient anulował rezerwację na dany dzień.
 
 ```sql
 CREATE TRIGGER T_CancelAllWorkshopsReservations
@@ -478,8 +646,11 @@ END
 GO
 ```
 
+<br />
+<b>T_NoPlacesForConferenceDay - </b>Blokuje rezerwacje lub zmiane ilości miejsc na dany dzień konferencji jeżeli nie ma tylu wolnych miejsc ile chce klient.
+
+
 ```sql
--- blokuje rezerwacje lub zmiane ilosci miejsc na dany dzien konferencji jezeli nie ma juz wolnych miejsc lub nie ma juz tylu wolnych miejsc ile chce klient
 CREATE TRIGGER T_NoPlacesForConferenceDay
 	ON DaysReservations
 	AFTER INSERT, UPDATE 
@@ -517,6 +688,9 @@ END
 GO
 ```
 
+<br />
+<b>T_CancelAllParticipantWorkshopsReservations1 - </b>Anuluje wszystkie zapisy uczestnika na warsztaty w danym dniu, jeżeli uczestnik anulował swój zapis na konferencję w tym dniu.
+
 ```sql
 CREATE TRIGGER T_CancelAllParticipantWorkshopsReservations1
 	ON ParticipantReservations
@@ -538,8 +712,10 @@ END
 GO
 ```
 
+<br />
+<b>T_CheckIfParticipantCanBeAdded - </b>Sprawdza czy można dodać uczestnika na warsztat.
+
 ```sql
--- sprawdzenie czy można dodać uczestnika na warsztat
 CREATE TRIGGER T_CheckIfParticipantCanBeAdded
 	ON ParticipantWorkshops
 	AFTER INSERT
@@ -584,8 +760,10 @@ END
 GO
 ```
 
+<br />
+<b>T_CheckPriceListInsert - </b>Kontroluje poprawność dodania nowego progu cenowego.
+
 ```sql
--- sprawdzanie, czy wpis do PriceList jet dobry
 CREATE TRIGGER T_CheckPriceListInsert
 	ON PriceList
 	AFTER INSERT
@@ -639,8 +817,10 @@ END
 GO
 ```
 
+<br />
+<b>T_ControlUpdatingPlacesForWorkshop - </b>Blokuje zmniejszenie liczby miejsc na warsztat jeżeli ilość do tej pory zarezerwowanych miejsc jest większa od nowo podanej liczby miejsc.
+
 ```sql
--- blokuje zmniejszenie liczby miejsc na warsztat jezeli ilosc do tej pory zarezerwowanych miejsc jest wieksza od nowej liczby dostepnych miejsc
 CREATE TRIGGER T_ControlUpdatingPlacesForWorkshop
 	ON Workshops
 	AFTER UPDATE
@@ -666,11 +846,10 @@ END
 GO
 ```
 
-```sql
---sprawdzanie czy wpisany dzien warsztatu jest jednym z dni konferencji
-USE mmandows_a
-GO
+<br />
+<b>T_CheckIfWorkshopDayBelongsToConferenceDay - </b>Sprawdza czy warsztat został wpisany na jeden z dni konferencji, do której został przypisany.
 
+```sql
 CREATE TRIGGER T_CheckIfWorkshopDayBelongsToConferenceDay
 	ON Workshops
 	AFTER INSERT
@@ -698,8 +877,11 @@ END
 GO
 ```
 
+
+<br />
+<b>T_ControlPlacesForWorkshop - </b>Blokuje rezerwacje lub aktualizacje miejsc na warsztat jeżeli nie ma już tylu wolnych miejsc lub podano więcej miejsc niż zarezerwowano na konferencję.
+
 ```sql
--- blokuje rezerwacje lub update miejsc na warsztat jezeli nie ma juz tylu miejsc lub zostalo podane wiecej miejsc niz zarezerwowane na konf.
 CREATE TRIGGER T_ControlPlacesForWorkshop
 	ON WorkshopsReservations
 	AFTER UPDATE, INSERT
@@ -745,6 +927,9 @@ END
 GO
 ```
 
+<br />
+<b>T_CancelAllParticipantWorkshopsReservations2 - </b>Anuluje zapisy na warsztat wszystkich uczestników, którzy są od klienta, który anluwał rezerwację miejsc na ten warsztat.
+
 ```sql
 CREATE TRIGGER T_CancelAllParticipantWorkshopsReservations2
 	ON WorkshopsReservations
@@ -775,8 +960,10 @@ END
 GO
 ```
 
+<br />
+<b>T_ControlFreePlacesReservedByClientForConferenceDay - </b>Blokuje dodanie uczestnika na dzień konferencji jeżeli zostały wykorzystane miejsca zarezerwowane przez klienta, od kótrego jest dany uczestnik.
+
 ```sql
--- blokuje dodanie uczestnika na dzien konferencji jezeli zostaly wykorzystane miejsca zarezerwowane przez klienta
 CREATE TRIGGER T_ControlFreePlacesReservedByClientForConferenceDay
 	ON ParticipantReservations
 	AFTER INSERT
@@ -840,8 +1027,10 @@ END
 GO
 ```
 
+<br />
+<b>T_ControlStudentsCardFieldsFilling - </b>Sprawdza czy albo podano obydwa pola identyfikujące studenta, albo nie podano żadnego.
+
 ```sql
--- kontrola pol StudentCard i StudentCardDate
 CREATE TRIGGER T_ControlStudentsCardFieldsFilling
 	ON ParticipantReservations
 	AFTER INSERT, UPDATE
@@ -864,8 +1053,10 @@ END
 GO
 ```
 
+<br />
+<b>T_ControlUpdatingPlacesForWorkshop - </b> Blokuje zmniejszenie liczby miejsc na warsztat jeżeli ilość do tej pory zarezerwowanych miejsc jest większa od nowo podanej liczby miejsc.
+
 ```sql
--- blokuje zmniejszenie liczby miejsc na warsztat jezeli ilosc do tej pory zarezerwowanych miejsc jest wieksza od nowej liczby dostepnych miejsc
 CREATE TRIGGER T_ControlUpdatingPlacesForWorkshop
 	ON Workshops
 	AFTER UPDATE
@@ -891,8 +1082,10 @@ END
 GO
 ```
 
+<br />
+<b>T_DeleteFineAssesdAfterCancelingConferenceReservation - </b> Zeruje należną opłatę po anulowaniu przez klienta rezerwacji na konferencję.
+
 ```sql
--- zerowanie op�aty po anulowaniu rezerwacji na konf
 CREATE TRIGGER T_DeleteFineAssesdAfterCancelingConferenceReservation
 	ON ClientReservations
 	AFTER UPDATE
@@ -912,8 +1105,10 @@ END
 GO
 ```
 
+<br />
+<b>T_CountFineAfterWorkhopReservationOrUpdate - </b> Wylicza należną opłatę za rezerwację na konferencję i warsztaty po zarezerwowaniu lub anulowaniu miejsc na dany warsztat.
+
 ```sql
--- wyliczanie oplaty po zarezerwowaniu lub anulowaniu miejsc na warsztaty
 CREATE TRIGGER T_CountFineAfterWorkhopReservationOrUpdate
 	ON WorkshopsReservations
 	AFTER INSERT, UPDATE
@@ -932,8 +1127,9 @@ END
 GO
 ```
 
+<br />
+<b>T_CountFineAfterConferenceDayReservationOrUpdate - </b> Wylicza należną opłatę za rezerwację na konferencję i warsztaty po zarezerwowaniu lub anulowaniu miejsc na dany dzień konferencji.
 ```sql
--- wyliczanie op�at po zarezerwowaniu lub anulowaniu miejsc na dzien konf
 CREATE TRIGGER T_CountFineAfterConferenceDayReservationOrUpdate
 	ON DaysReservations
 	AFTER INSERT, UPDATE
@@ -949,8 +1145,1420 @@ END
 GO
 ```
 
+#Procedury
+
+** P_AddClinet - ** dodaje nowego klienta
+
+```sql
+CREATE PROCEDURE P_AddClient
+	@ClientName VARCHAR(50),
+	@ClientSurname VARCHAR(50),
+	@IsPrivate BIT,
+	@PhoneNumber INT,
+	@Email VARCHAR(50),
+	@Address VARCHAR(50),
+	@City VARCHAR(50),
+	@PostalCode INT,
+	@Country VARCHAR(30)
+AS
+BEGIN
+	IF EXISTS (
+		SELECT * FROM Clients
+		WHERE @Email = Email
+	)
+	BEGIN
+		RAISERROR ('Taki klient już instnieje w bazie', -1, -1)
+		RETURN
+	END
+
+	INSERT INTO Clients
+		VALUES (
+			@ClientName,
+			@ClientSurname,
+			@IsPrivate,
+			@PhoneNumber,
+			@Email,
+			@Address,
+			@City,
+			@PostalCode,
+			@Country
+		)
+END
+GO
+```
+<br />
+**P_AddConference - ** dodaje nową konferencję
+
+```sql
+CREATE PROCEDURE P_AddConference
+	@ConferenceName varchar(50),
+	@StartDate date,
+	@EndDate date,
+	@Places int,
+	@Discount float(10)
+AS
+BEGIN
+	INSERT INTO Conferences 
+		VALUES
+		(
+			@ConferenceName,
+			@StartDate,
+			@EndDate,
+			@Places,
+			@Discount
+		)
+END
+GO
+
+--dodawanie uczestników
+CREATE PROCEDURE P_AddParticipant
+	@Name VARCHAR(50),
+	@Surname VARCHAR(50),
+	@PhoneNumber INT,
+	@Email VARCHAR(50),
+	@City VARCHAR(50),
+	@Country VARCHAR(50)
+AS
+BEGIN
+	IF EXISTS (
+		SELECT * FROM Participants
+		WHERE Email = @Email
+	)
+	BEGIN
+		RAISERROR ('Taki uczestnik już istnieje', -1, -1)
+		RETURN
+	END
+
+	INSERT INTO Participants
+		VALUES (
+			@Name,
+			@Surname,
+			@PhoneNumber,
+			@Email,
+			@City,
+			@Country
+		)
+END
+GO
+```
+
+<br />
+**P_AddParticipantForConferenceDay - ** dodaje uczestnika na dany dzień konferencji
+
+```sql
+CREATE PROCEDURE P_AddParticipantForConferenceDay
+	(
+		@ParticipantID int,
+		@DayReservationID int,
+		@StudentCard int,
+		@StudentCardDate date
+	)
+AS
+BEGIN
+	-- czy uczestnik juz nie zostal zarejestrowany
+	IF EXISTS 
+		(
+			SELECT *
+			FROM ParticipantReservations
+			WHERE ParticipantID		 = @ParticipantID
+				AND DayReservationID = @DayReservationID
+				AND IsCancelled		 = 0
+		)
+		BEGIN
+			RAISERROR ('Podany uczestnik jest ju� zarejestrowany na ten dzie� konferencji.', -1, -1)
+			RETURN
+		END
+	
+	-- czy uczestnik istnieje
+	IF NOT EXISTS 
+		(
+			SELECT *
+			FROM Participants
+			WHERE ParticipantID = @ParticipantID
+		)
+	BEGIN 
+		RAISERROR ('Nie ma uczestnika o podanym ID.', -1, -1)
+		RETURN
+	END
+
+	-- czy istnieje rezerwacja dnia o podanym ID
+	IF NOT EXISTS
+		(
+			SELECT *
+			FROM DaysReservations
+			WHERE DayReservationID = @DayReservationID
+				AND IsCancelled = 0
+		)
+	BEGIN
+		RAISERROR ('Nie ma rezerwacji dnia o podanym ID.', -1 , -1)
+		RETURN
+	END
+	
+	INSERT INTO ParticipantReservations
+		(
+			ParticipantID,
+			DayReservationID,
+			StudentCard,
+			StudentCardDate
+		)
+	VALUES
+		(
+			@ParticipantID,
+			@DayReservationID,
+			@StudentCard,
+			@StudentCardDate
+		)
+
+END
+GO
+```
+
+<br />
+**P_AddParticipantForWorkshop - ** dodaje uczestnika na dany warsztat
+```sql
+CREATE PROCEDURE P_AddParticipantForWorkshop
+	@ParticipantReservationID int,
+	@WorkshopID int
+AS
+BEGIN
+	IF EXISTS 
+		(
+			SELECT *
+			FROM ParticipantWorkshops
+			WHERE ParticipantReservationID = @ParticipantReservationID
+				AND WorkshopID			   = @WorkshopID
+				AND IsCancelled			   = 0
+		)
+	BEGIN
+		RAISERROR ('Podany uczestnik rezerwowa� jest ju� zarejestrowany na ten warsztat.', -1, -1)
+		RETURN
+	END
+
+	INSERT INTO ParticipantWorkshops
+		(
+			ParticipantReservationID,
+			WorkshopID
+		)
+	VALUES
+		(
+			@ParticipantReservationID,
+			@WorkshopID
+		)
+
+END
+GO
+
+-- dodawanie progu cenowego
+CREATE PROCEDURE P_AddPriceToConferencePriceList
+	@ConferenceID int,
+	@PriceValue money,
+	@PriceDate date 
+AS
+BEGIN
+	IF NOT EXISTS 
+		(
+			SELECT * 
+			FROM Conferences 
+			WHERE ConferenceID = @ConferenceID
+		)
+	BEGIN
+		RAISERROR ('Nie ma konferencji o takim ID.', -1, -1)
+		RETURN
+	END
+
+	INSERT INTO PriceList
+		VALUES
+		(
+			@ConferenceID,
+			@PriceValue,
+			@PriceDate
+		)
+END
+GO
+```
+
+<br />
+**P_AddReservationForConference - ** dodaje rezerwacje danego klienta na daną rezerwację
+
+```sql
+CREATE PROCEDURE P_AddReservationForConference
+	@ConferenceID int,
+	@ClientID int
+AS
+BEGIN
+	IF EXISTS 
+		( 
+			SELECT *
+			FROM ClientReservations
+			WHERE ConferenceID = @ConferenceID
+				AND ClientID = @ClientID
+				AND IsCancelled = 0
+		)
+	BEGIN
+		RAISERROR ('Klient o podanym ID juz rejestrowa� si� na konferencj� o podanym ID', -1, -1)
+		RETURN
+	END
+	INSERT INTO ClientReservations (ConferenceID, ClientID)
+		VALUES
+		(
+			@ConferenceID,
+			@ClientID
+		)
+
+END
+GO
+```
+
+<br />
+**P_AddReservationForConferenceDay - ** dodaje rezerwacje danego klienta na dany dzień konferencji
+```sql
+CREATE PROCEDURE P_AddReservationForConferenceDay
+	@ClientReservationID int,
+	@ConferenceDay int,
+	@NormalReservations int,
+	@StudentReservations int
+AS
+BEGIN
+	IF EXISTS
+		(
+			SELECT *
+			FROM DaysReservations 
+			WHERE ClientReservationID = @ClientReservationID
+				AND ConferenceDay     = @ConferenceDay
+				AND IsCancelled		  = 0
+		)
+	BEGIN
+		RAISERROR ('Ten klient dokonywa� ju� rejestracji na ten dzie� konferencji', -1, -1)
+		RETURN
+	END
+
+	INSERT INTO DaysReservations
+		(
+			ClientReservationID,
+			ConferenceDay,
+			NormalReservations,
+			StudentsReservations
+		)
+	VALUES
+		(
+			@ClientReservationID,
+			@ConferenceDay,
+			@NormalReservations,
+			@StudentReservations
+		)
+
+END
+GO
+```
+
+<br />
+**P_AddReservationForWorkshop - ** dodaje rezerwacje danego klienta na dany warsztat 
+```sql
+CREATE PROCEDURE P_AddReservationForWorkshop
+	@DayReservationID int,
+	@WorkshopID int,
+	@NormalReservations int
+AS
+BEGIN
+	IF EXISTS
+		(
+			SELECT *
+			FROM WorkshopsReservations
+			WHERE DayReservationID = @DayReservationID
+				AND WorkshopID	   = @WorkshopID
+				AND IsCancelled	   = 0
+		)
+	BEGIN
+		RAISERROR ('Ten klient rezerwowa� juz miejsca na ten warsztat', -1, -1)
+		RETURN
+	END
+
+	INSERT INTO WorkshopsReservations
+		(
+			DayReservationID,
+			WorkshopID,
+			NormalReservations
+		)
+	VALUES
+		(
+			@DayReservationID,
+			@WorkshopID,
+			@NormalReservations
+		)
+END
+GO
+```
+
+<br />
+**P_AddWorkshop - ** dodaje nowy warsztat
+```sql
+CREATE PROCEDURE P_AddWorkshop
+	@ConferenceID int,
+	@ConferenceDay int, 
+	@WorkshopName varchar(50),
+	@Places int, 
+	@WorkshopFee money,
+	@WorkshopStart time, 
+	@WorkshopEnd time 
+AS
+BEGIN
+	INSERT INTO Workshops
+		VALUES
+		(
+			@ConferenceID,
+			@ConferenceDay, 
+			@WorkshopName,
+			@Places, 
+			@WorkshopFee,
+			@WorkshopStart, 
+			@WorkshopEnd
+		)
+END 
+GO
+```
+
+<br />
+**P_CancelConferenceReservation - ** anuluje rezerwacje na konferencję
+```sql
+CREATE PROCEDURE P_CancelConferenceReservation
+	@ClientReservationID		int
+AS
+BEGIN
+
+	-- czy istnieje rezerwacja o podanym id
+	IF NOT EXISTS
+		(
+			SELECT *
+			FROM ClientReservations
+			WHERE ClientReservationID = @ClientReservationID
+		)
+	BEGIN
+		RAISERROR ('Nie ma rezerwacji na konferencje o podanym ID.', -1, -1)
+		RETURN
+	END
+
+	-- czy rezerwacja zostala juz anulowana
+	IF 
+		( 
+			SELECT IsCancelled
+			FROM ClientReservations
+			WHERE ClientReservationID = @ClientReservationID
+		) = 1
+	BEGIN
+		RAISERROR ('Ta rezerwacja zosta�a ju� anulowana.', -1, -1)
+		RETURN
+	END
+
+	UPDATE ClientReservations
+		SET IsCancelled = 1
+		WHERE ClientReservationID = @ClientReservationID
+
+END
+GO
+```
+
+<br />
+**P_CabcekDayReservation - ** anuluje daną rezerwacje na dzień konferencji
+```sql
+CREATE PROCEDURE P_CancelDayReservation
+	@DayReservationID int
+AS
+BEGIN
+	IF NOT EXISTS
+		(
+			SELECT * FROM DaysReservations WHERE DayReservationID = @DayReservationID
+		)
+	BEGIN
+		RAISERROR ('Nie istnieje taki dzień', -1, -1)
+		RETURN
+	END
+
+	IF (
+		SELECT IsCancelled FROM DaysReservations WHERE DayReservationID = @DayReservationID
+		) = 1
+	BEGIN
+		RAISERROR ('Rezerwacja jest już anulowana', -1, -1)
+		RETURN
+	END
+
+	UPDATE DaysReservations
+	SET IsCancelled = 1
+	WHERE DayReservationID = @DayReservationID
+		
+END	
+GO
+```
+
+<br />
+**P_CancelParticipatReservation - ** anuluje rezerwacje uczestnika na dany dzień konferencji
+```sql
+CREATE PROCEDURE P_CancelParticipantReservation
+	@ParticipantReservationID INT
+AS
+BEGIN
+	IF NOT EXISTS
+		(
+			SELECT * FROM ParticipantReservations WHERE ParticipantReservationID = @ParticipantReservationID
+		)
+	BEGIN
+		RAISERROR ('Nie istnieje taka rezerwacja', -1, -1)
+		RETURN
+	END
+
+	IF (
+		SELECT IsCancelled FROM ParticipantReservations WHERE ParticipantReservationID = @ParticipantReservationID
+		) = 1
+	BEGIN
+		RAISERROR ('Rezerwacja jest już anulowana', -1, -1)
+		RETURN
+	END
+
+	UPDATE ParticipantReservations
+	SET IsCancelled = 1
+	WHERE ParticipantReservationID = @ParticipantReservationID
+END
+GO
+```
 
 
+<br />
+**P_CancelParticipantWorkshopReservation - ** anuluje rezerwację uczestnika na dany warsztat
+```sql
+CREATE PROCEDURE P_CancelParticipantWorkshopReservation
+	@WorkshopReservationID INT
+AS
+BEGIN
+	IF NOT EXISTS
+		(
+			SELECT * FROM ParticipantWorkshops WHERE WorkshopReservationID = @WorkshopReservationID
+		)
+	BEGIN
+		RAISERROR ('Nie istnieje taka rezerwacja', -1, -1)
+		RETURN
+	END
+
+	IF (
+		SELECT IsCancelled FROM ParticipantWorkshops WHERE WorkshopReservationID = @WorkshopReservationID
+		) = 1
+	BEGIN
+		RAISERROR ('Rezerwacja jest już anulowana', -1, -1)
+		RETURN
+	END
+
+	UPDATE ParticipantWorkshops
+	SET IsCancelled = 1
+	WHERE WorkshopReservationID = @WorkshopReservationID
+END
+GO
+```
+
+<br />
+**P_CancelUnpaiedReservation - ** anuluje nieopłacone w terminie rezerwacje
+```sql
+CREATE PROCEDURE P_CancelUnpaiedReservation
+AS
+BEGIN
+	DECLARE @ClientReservationID INT;
+
+	WHILE EXISTS (
+		SELECT * FROM Payments p
+		JOIN ClientReservations cr ON cr.ClientReservationID = p.PaymentID
+		WHERE p.FinePaid < p.FineAssessed AND p.DueDate < convert(date, getdate()) AND cr.IsCancelled = 0
+	)
+	BEGIN
+		SET @ClientReservationID = (
+			SELECT TOP 1 cr.ClientReservationID FROM Payments p
+			JOIN ClientReservations cr ON cr.ClientReservationID = p.PaymentID
+			WHERE p.FinePaid < p.FineAssessed AND p.DueDate < convert(date, getdate()) AND cr.IsCancelled = 0
+		);
+
+		EXEC P_CancelConferenceReservation @ClientReservationID; 
+	END
+END
+GO
+```
+
+<br />
+**P_CancelWorkshopReservation - ** anuluje rezerwacje klienta na dany warsztat
+```sql
+CREATE PROCEDURE P_CancelWorkshopResrvation
+	@WorkshopReservationID INT
+AS
+BEGIN
+	IF NOT EXISTS (
+		SELECT * FROM WorkshopsReservations
+		WHERE WorkshopReservationID = @WorkshopReservationID
+	)
+	BEGIN
+		RAISERROR ('Taka rezerwacja nie istnieje', -1, -1)
+		RETURN
+	END
+
+	IF (
+		SELECT IsCancelled FROM WorkshopsReservations
+		WHERE WorkshopReservationID = @WorkshopReservationID
+	) = 1
+	BEGIN
+		RAISERROR ('Ta rezerwacja jest już anulowana', -1, -1)
+		RETURN
+	END
+
+	UPDATE WorkshopsReservations
+		SET IsCancelled = 1
+		WHERE WorkshopReservationID = @WorkshopReservationID
+
+END
+GO
+```
+
+<br />
+**P_ChangeConferenceDetails - ** zmienia dane konferencji, w tym ilość dostępnych miejsc
+```sql
+CREATE PROCEDURE P_ChangeConferenceDetails
+	@ConferenceID int,
+	@StartDate date,
+	@EndDate date,
+	@Places int,
+	@Discount float(10)
+AS
+BEGIN
+	IF NOT EXISTS
+		(
+			SELECT *
+			FROM Conferences
+			WHERE ConferenceID = @ConferenceID
+		)
+	BEGIN
+		RAISERROR ('Nie ma konferencji o takim ID.', -1, -1)
+		RETURN
+	END
+
+	-- aktualizowanie poczatku konferencji
+	IF @StartDate IS NOT NULL
+	BEGIN 
+		UPDATE Conferences
+			SET StartDate	   = @StartDate
+			WHERE ConferenceID = @ConferenceID
+	END
+
+	-- aktualizowanie konca konferencji
+	IF @EndDate IS NOT NULL
+	BEGIN
+		UPDATE Conferences
+			SET EndDate		   = @EndDate
+			WHERE ConferenceID = @ConferenceID
+	END
+
+	-- aktualizoawnie znizki
+	IF @Discount IS NOT NULL
+	BEGIN 
+		UPDATE Conferences
+			SET Discount	   = @Discount
+			WHERE ConferenceID = @ConferenceID
+	END
+
+	-- aktualizowanie miejsc
+	IF @Places IS NOT NULL
+	BEGIN 
+		UPDATE Conferences
+			SET Places		   = @Places
+			WHERE ConferenceID = @ConferenceID
+	END
+
+END
+GO
+```
+
+<br />
+**P_ChangeDayReservationPlaces - ** zmienia iloość zarezerwowanych przez klienta miejsc na dany dzień konferencji
+```sql
+CREATE PROCEDURE P_ChangeDayReservationPlaces
+	@DayReservationID INT,
+	@NumberOfPlaces INT,
+	@IsStudent BIT
+AS
+BEGIN
+	IF @IsStudent = 0
+	BEGIN
+		UPDATE DaysReservations
+		SET NormalReservations = @NumberOfPlaces
+		WHERE DayReservationID = @DayReservationID
+		RETURN
+	END
+
+	UPDATE DaysReservations
+	SET StudentsReservations = @NumberOfPlaces
+	WHERE DayReservationID = @DayReservationID
+END
+GO
+```
+
+<br />
+**P_ChangeWorkshopDetails - ** zmienia dane warsztatu w tym ilość dostępnych miejsc
+```sql
+CREATE PROCEDURE P_ChangeWorkshopDetails
+	@WorkshopID int,
+	@ConferenceDay int,
+	@Places int,
+	@WorkshopStart time,
+	@WorkshopEnd time
+AS
+BEGIN
+	IF NOT EXISTS
+		( 
+			SELECT *
+			FROM Workshops
+			WHERE WorkshopID = @WorkshopID
+		)
+	BEGIN 
+		RAISERROR ('Nie ma warsztatu o takim ID.', -1, -1)
+		RETURN
+	END
+
+	-- aktualizowanie dnia 
+	IF @ConferenceDay IS NOT NULL
+	BEGIN
+		UPDATE Workshops
+			SET ConferenceDay = @ConferenceDay
+			WHERE WorkshopID  = @WorkshopID
+	END
+
+	-- aktualizownaie ilości miejsc
+	IF @Places IS NOT NULL
+	BEGIN
+		UPDATE Workshops
+			SET Places		 = @Places
+			WHERE WorkshopID = @WorkshopID
+	END
+
+	-- aktualizowanie czasu rozpoczęcia
+	IF @WorkshopStart IS NOT NULL
+	BEGIN
+		UPDATE Workshops
+			SET WorkshopStart = @WorkshopStart
+			WHERE WorkshopID  = @WorkshopID
+	END
+
+	-- aktualizowanie czasu zakończenia
+	IF @WorkshopEnd IS NOT NULL
+	BEGIN
+		UPDATE Workshops
+			SET WorkshopEnd  = @WorkshopEnd
+			WHERE WorkshopID = @WorkshopID
+	END
+
+END
+GO
+```
+
+<br />
+**P_ChangeWorkshopReservationPlaces - ** zmienia ilość zarezerwowanych przez klienta miejsc na dany warsztat
+```sql
+CREATE PROCEDURE P_ChangeWorkshopReservationPlaces
+	@WorkshopReservationID INT,
+	@NumberOfPlaces INT
+AS
+BEGIN
+	UPDATE WorkshopReservations
+	SET NormalReservations = @NumberOfPlaces
+	WHERE WorkshopReservationID = @WorkshopReservationID
+END
+GO
+```
+
+<br />
+**P_CheckCurrentPayment - ** sprawdza status opłaty klienta
+```sql
+CREATE PROCEDURE P_CheckCurrentPayment
+	@ClientID INT,
+	@ConferenceID INT
+AS
+BEGIN
+	DECLARE @PaymentID INT, @FineAssessed money, @FinePaid money;
+	SET @PaymentID = (
+		SELECT ClientReservationID
+		FROM ClientReservations
+		WHERE @ConferenceID = ConferenceID AND @ClientID = ClientID
+	)
+
+	SET @FineAssessed = (
+		SELECT FineAssessed
+		FROM Payments
+		WHERE @PaymentID = PaymentID
+	)
+	SET @FinePaid = (
+		SELECT FinePaid
+		FROM Payments
+		WHERE @PaymentID = PaymentID
+	)
+
+	IF @FineAssessed > @FinePaid
+	BEGIN
+		PRINT 'Klient jeszcze nie zapłacił'
+		RETURN
+	END
+
+	IF @FineAssessed = @FinePaid
+	BEGIN
+		PRINT 'Klient zapłacił'
+		RETURN
+	END
+
+	PRINT 'Klient nadpłacił'
+END
+GO
+```
+
+<br />
+**P_CountFine - ** wylicza opłatę należną za rezerwacje miejsc na konferencję i warsztaty dla konkretnej rezerwacji
+```sql
+CREATE PROCEDURE P_CountFine
+	@ClientReservationID INT
+AS
+BEGIN
+	DECLARE @CurrentPrice money, @Sum money, @Discount float(10);
+	DECLARE @ConferenceID INT
+		= ( SELECT ConferenceID
+			FROM ClientReservations
+			WHERE ClientReservationID = @ClientReservationID )
+	SET @CurrentPrice = dbo.F_GetCurrentPrice(@ConferenceID, (
+		SELECT ReservationDate
+		FROM ClientReservations
+		WHERE @ClientReservationID = ClientReservationID
+	));
+	SET @Discount = (
+		SELECT Discount
+		FROM Conferences
+		WHERE ConferenceID = @ConferenceID
+	);
+
+	SET @Sum = (
+		SELECT ((SUM(NormalReservations) + (SUM(StudentsReservations) * (1 - @Discount))) * @CurrentPrice) as NumberOfPlaces
+		FROM DaysReservations
+		WHERE @ClientReservationID = ClientReservationID AND IsCancelled = 0
+		GROUP BY ClientReservationID
+	) + (
+		SELECT SUM(wr.NormalReservations * w.WorkshopFee)
+		FROM WorkshopsReservations wr
+		JOIN DaysReservations dr ON dr.DayReservationID = wr.DayReservationID
+		JOIN Workshops w ON w.WorkshopID = wr.WorkshopID
+		WHERE dr.ClientReservationID = @ClientReservationID AND wr.IsCancelled = 0
+		GROUP BY dr.ClientReservationID
+	);
+
+	UPDATE Payments
+		SET FineAssessed = @Sum
+		WHERE PaymentID = @ClientReservationID
+END
+GO
+```
+
+<br />
+**P_DeletePriceFromConferencePriceList - ** usuwa dany próg cenowy
+```sql
+CREATE PROCEDURE P_DeletePriceFromConferencePriceList
+	@PriceID int
+AS 
+BEGIN
+	IF NOT EXISTS 
+		(
+			SELECT * 
+			FROM PriceList
+			WHERE PriceID = @PriceID
+		)
+	BEGIN
+		RAISERROR ('Nie ma progu cenowego o podanym ID', -1, -1)
+		RETURN
+	END
+	DELETE PriceList
+		WHERE PriceID = @PriceID 
+END
+GO
+```
 
 
+#Funkcje
 
+**F_AllPaymentsByClientID - ** zwraca tabelę z całą historią płatności klienta (w tym te nieuregulowane)
+```sql
+CREATE FUNCTION F_AllPaymentsByClientID
+	(
+		@ClientID int
+	)
+	RETURNS TABLE
+AS 
+	RETURN 
+		SELECT c.ClientID, c.ClientName, c.ClientSurname, conf.ConferenceID, conf.ConferenceName, p.FineAssessed, p.FinePaid
+		FROM Clients AS c
+		INNER JOIN ClientReservations AS cr
+				ON c.ClientID = cr.ClientID
+		INNER JOIN Payments AS p
+				ON cr.ClientReservationID = p.PaymentID
+		INNER JOIN Conferences AS conf
+				ON cr.ConferenceID = conf.ConferenceID
+		WHERE c.ClientID = @ClientID 
+				AND cr.IsCancelled = 0
+GO
+```
+<br />
+**F_ClientReservationsHistory - ** zwraca tabelę z całą historią rezerwacji klienta (w tym obecne)
+```sql
+CREATE FUNCTION F_ClientReservationsHistory
+	(
+		@ClientID int
+	)
+	RETURNS TABLE
+AS 
+	RETURN 
+		SELECT c.ClientID, c.ClientName, c.ClientSurname, cr.ConferenceID, cr.IsCancelled, conf.ConferenceName
+		FROM Clients AS c
+		INNER JOIN ClientReservations AS cr 
+				ON c.ClientID = cr.ClientID
+		INNER JOIN Conferences AS conf
+				ON cr.ConferenceID = conf.ConferenceID
+		WHERE c.ClientID = @ClientID
+GO
+```
+
+<br />
+**F_ClientsWithUnusedPlaces - ** zwraca tabelę przedstawiającą listę klientów wraz z liczbą niewykorzystanych jeszcze przez uczestników zgłoszonych przez danego klienta miejsc
+```sql
+CREATE FUNCTION F_ClientsWithUnusedPlaces
+    (
+        @ConferenceID int
+    )
+    RETURNS TABLE
+ AS
+ RETURN
+    SELECT dr.ConferenceDay, c.ClientName, (dr.NormalReservations + dr.StudentsReservations - (
+		SELECT COUNT(*)
+		FROM ParticipantReservations pr
+		WHERE pr.DayReservationID = dr.DayReservationID
+	)) as FreePlaces
+    FROM DaysReservations dr
+	JOIN ClientReservations cr
+	ON cr.ClientReservationID = dr.ClientReservationID
+	JOIN Clients c
+	ON c.ClientID = cr.ClientID
+	WHERE cr.ConferenceID = @ConferenceID AND (dr.NormalReservations + dr.StudentsReservations - (
+		SELECT COUNT(*)
+		FROM ParticipantReservations pr
+		WHERE pr.DayReservationID = dr.DayReservationID
+	)) != 0
+GO
+```
+
+<br />
+**F_ConferenceParticipants - ** zwraca listę wszystkich uczestników biorących udział w danej konferencji
+```sql
+CREATE FUNCTION F_ConferenceParticipants
+    (
+        @ConferenceID int
+    )
+    RETURNS TABLE
+AS
+RETURN
+    SELECT DISTINCT sub.ParticipantID, p.Name, p.Surname
+    FROM (
+        SELECT pr.ParticipantID
+        FROM Conferences c
+            JOIN ClientReservations cr
+            on c.ConferenceID = cr.ConferenceID
+            JOIN DaysReservations dr
+            on dr.ClientReservationID = cr.ClientReservationID
+            JOIN ParticipantReservations pr
+            on pr.DayReservationID = dr.DayReservationID
+        WHERE c.ConferenceID = @ConferenceID AND pr.IsCancelled = 0
+    ) as sub
+	JOIN Participants p
+	ON p.ParticipantID = sub.ParticipantID
+GO
+```
+
+<br />
+**F_CreatePeopleIdentifiers - ** zwraca tabelę przedstawiającą listę identyfikatorów uczestników biorących udział w danej konferencji
+```sql
+CREATE FUNCTION F_CreatePeopleIdentifiers
+    (
+        @ConferenceID int
+    )
+    RETURNS TABLE
+AS
+RETURN
+    SELECT DISTINCT sub.ParticipantID, p.Name, p.Surname, IIF(c.IsPrivate = 0, '', c.ClientName) as ClientName
+    FROM (
+        SELECT pr.ParticipantID, cr.ClientID
+        FROM Conferences c
+            JOIN ClientReservations cr
+            on c.ConferenceID = cr.ConferenceID
+            JOIN DaysReservations dr
+            on dr.ClientReservationID = cr.ClientReservationID
+            JOIN ParticipantReservations pr
+            on pr.DayReservationID = dr.DayReservationID
+        WHERE c.ConferenceID = @ConferenceID AND pr.IsCancelled = 0
+    ) as sub
+    JOIN Participants p
+    ON p.ParticipantID = sub.ParticipantID
+    JOIN Clients c
+    ON c.ClientID = sub.ClientID
+GO
+```
+
+<br />
+**F_FreeAndReservedPlacesForConference - ** zwraca tabelę przedstawiającą listę dni konferencji wraz z liczbą wszystkich, wolnych i zarezerwowanych miejsc
+```sql
+CREATE FUNCTION F_FreeAndReservedPlacesForConference
+	(
+		@ConferenceID  int
+	)
+	RETURNS TABLE
+AS
+	RETURN
+		SELECT c.ConferenceName,
+			   dr.ConferenceDay,
+			   c.Places,
+			   c.Places - SUM(dr.NormalReservations + dr.StudentsReservations) AS FreePlaces,
+			   SUM(dr.NormalReservations + dr.StudentsReservations) AS ReservedPlaces
+			   
+		FROM Conferences AS c
+		INNER JOIN  ClientReservations AS cr
+				ON c.ConferenceID = cr.ConferenceID
+		INNER JOIN DaysReservations AS dr
+				ON cr.ClientReservationID = dr.ClientReservationID
+		WHERE c.ConferenceID = @ConferenceID
+				AND dr.IsCancelled = 0
+		GROUP BY dr.ConferenceDay, c.Places, c.ConferenceName
+GO
+```
+
+<br />
+**F_FreeAndReservedPlacesForWorkshop - ** zwraca tabelę przedstawiającą listę warsztatów wraz z liczbą wszystkich, wolnych i zaerzerwowanych miejsc
+```sql
+CREATE FUNCTION F_FreeAndReservedPlacesForWorkshop
+	(
+		@WorkshopID  int
+	)
+	RETURNS TABLE
+AS
+	RETURN
+		SELECT w.WorkshopID,
+			   w.WorkshopName,
+			   w.Places,
+			   SUM(wr.NormalReservations) AS ReservedPlaces,
+			   w.Places - SUM(wr.NormalReservations) AS FreePlaces
+		FROM Workshops AS w
+		INNER JOIN WorkshopsReservations AS wr
+				ON w.WorkshopID = wr.WorkshopID
+		WHERE wr.IsCancelled = 0
+		AND w.WorkshopID = @WorkshopID
+		GROUP BY w.WorkshopID, w.Places, w.WorkshopName
+GO
+```
+
+<br />
+**F_NonregulatedPaymentsByClientID - ** zwraca tabelę przedstawiającą listę nieuregulowanych opłat danego klienta
+```sql
+CREATE FUNCTION F_NonregulatedPaymentsByClientID
+	(
+		@ClientID  int
+	)
+	RETURNS TABLE
+AS
+	RETURN
+		SELECT c.ClientID, c.ClientName, c.ClientSurname, conf.ConferenceID, conf.ConferenceName, p.FineAssessed, p.FinePaid
+		FROM Clients AS c
+		INNER JOIN ClientReservations AS cr
+				ON c.ClientID = cr.ClientID
+		INNER JOIN Payments AS p
+				ON cr.ClientReservationID = p.PaymentID
+		INNER JOIN Conferences AS conf
+				ON cr.ConferenceID = conf.ConferenceID
+		WHERE cr.IsCancelled = 0
+				AND p.FinePaid < p.FineAssessed
+				AND c.ClientID = @ClientID
+GO
+```
+
+<br />
+**F_ParticipantsListForConferenceDay - ** zwraca tabelę przedstawiającą listę uczestników zapisanych na dany dzień konferencji
+```sql
+CREATE FUNCTION F_ParticipantsListForConferenceDay
+	(
+		@ConferenceID int,
+		@ConferenceDay int
+	)
+	RETURNS TABLE
+AS
+	RETURN
+		SELECT c.ConferenceName, dr.ConferenceDay, p.*
+		FROM Participants AS p
+		INNER JOIN ParticipantReservations as pr 
+				ON p.ParticipantID = pr.ParticipantID
+		INNER JOIN DaysReservations AS dr
+				ON pr.DayReservationID = dr.DayReservationID
+		INNER JOIN ClientReservations AS cr 
+				ON cr.ClientReservationID = dr.ClientReservationID
+		INNER JOIN Conferences AS c 
+				ON cr.ConferenceID = c.ConferenceID
+		WHERE c.ConferenceID = @ConferenceID 
+				AND dr.ConferenceDay = @ConferenceDay
+				AND pr.IsCancelled = 0
+GO
+```
+
+<br />
+**F_ParticipantsListForWorkshop - ** zwraca listę uczestników zapisanych na dany warsztat
+```sql
+CREATE FUNCTION F_ParticipantsListForWorkshop
+	(
+		@WorkshopID int
+	)
+	RETURNS TABLE
+AS
+	RETURN
+		SELECT w.WorkshopID, w.WorkshopName, p.*
+		FROM Participants AS p
+		INNER JOIN ParticipantReservations AS pr
+				ON p.ParticipantID = pr.ParticipantID
+		INNER JOIN ParticipantWorkshops AS pw
+				ON pr.ParticipantReservationID = pw.ParticipantReservationID
+		INNER JOIN Workshops AS w 
+				ON w.WorkshopID = pw.WorkshopID
+		WHERE w.WorkshopID = @WorkshopID 
+				AND pw.IsCancelled = 0
+GO
+```
+
+<br />
+**F_RegulatedPaymentsByClientID - ** zwraca tabelę przedstawiającą historię uregulowanych opłat danego klienta
+```sql
+CREATE FUNCTION F_RegulatedPaymentsByClientID
+	(
+		@ClientID int
+	)
+	RETURNS TABLE
+AS 
+	RETURN 
+		SELECT c.ClientID, c.ClientName, c.ClientSurname, conf.ConferenceID, conf.ConferenceName, p.FineAssessed, p.FinePaid
+		FROM Clients AS c
+		INNER JOIN ClientReservations AS cr
+				ON c.ClientID = cr.ClientID
+		INNER JOIN Payments AS p
+				ON cr.ClientReservationID = p.PaymentID
+		INNER JOIN Conferences AS conf
+				ON cr.ConferenceID = conf.ConferenceID
+		WHERE c.ClientID = @ClientID 
+				AND cr.IsCancelled = 0
+				AND p.FineAssessed <= FinePaid
+GO
+```
+
+<br />
+**F_ShowPrices - ** zwraca tabelę przedstawiającą cennik dotyczący rezerwacji miejsc na konferencję w zależności od daty wykonania rezerwacji
+```sql
+CREATE FUNCTION F_ShowPrices
+    (
+        @ConferenceID int
+    )
+    RETURNS TABLE
+AS
+RETURN
+    SELECT p.PriceValue, p.PriceDate
+    FROM PriceList p
+    WHERE p.ConferenceID = @ConferenceID
+GO
+```
+
+<br />
+**F_ShowWorkshops - ** zwraca tabelę przedstawiającą listę warsztatów odbywających się podczas danej konferencji
+```sql
+CREATE FUNCTION F_ShowWorkshops
+    (
+        @ConferenceID int
+    )
+    RETURNS TABLE
+AS
+RETURN
+    SELECT WorkshopID, WorkshopName
+    FROM Workshops
+    WHERE ConferenceID = @ConferenceID
+GO
+```
+
+<br />
+**F_GetCurrentPrice - ** zwraca wysokość opłaty za rezerwację na konferencję gdyby miała nastąpić w tym momencie
+```sql
+CREATE FUNCTION F_GetCurrentPrice
+    (
+        @ConferenceID int,
+        @CurrentDate date
+    )
+    RETURNS money
+AS
+BEGIN
+    DECLARE @Price money;
+    SELECT TOP 1 @Price = PriceValue
+    FROM PriceList
+    WHERE @ConferenceID = ConferenceID AND @CurrentDate <= PriceDate
+    ORDER BY PriceDate;
+    RETURN @Price
+END
+GO
+```
+
+#Widoki
+**V_MostFrequentClients - ** przedstawia listę 10 klientów najczęściej dokonujących rezerwacji na konferencje
+```sql
+CREATE VIEW V_MostFrequentClients 
+AS
+	SELECT TOP 10 c.ClientName, c.ClientSurname, COUNT (*) AS Frequency
+	FROM ClientReservations as cr
+	INNER JOIN Clients AS c 
+			ON cr.ClientID = c.ClientID
+	WHERE cr.IsCancelled = 0
+	GROUP BY cr.ClientID, c.ClientName, c.ClientSurname
+	ORDER BY Frequency DESC
+GO 
+```
+<br />
+**V_MostProfitableClients - ** przedstawia listę 10 klientów, którzy najwięcej zapłacili za rezerwacje miejsc na konferencje i warsztaty od początku działalności firmy 
+```sql
+CREATE VIEW V_MostProfitableClients
+AS
+	SELECT TOP 10 c.ClientName, c.ClientSurname, SUM(p.FineAssessed) as TotalProfit
+	FROM Payments as p
+	INNER JOIN ClientReservations as cr
+			ON p.PaymentID = cr.ClientReservationID
+	INNER JOIN Clients as c
+			ON cr.ClientID = c.ClientID
+	WHERE cr.IsCancelled = 0
+	GROUP BY cr.ClientID, c.ClientName, c.ClientSurname
+	ORDER BY TotalProfit DESC
+GO
+```
+
+<br />
+**V_UnpayedCancelledReservations - **przedstawia nieopłacone i już anulowane z tego powodu rezerwacje
+```sql
+CREATE VIEW V_UnpayedCancelledReservations
+AS
+	SELECT conf.ConferenceName, c.ClientName
+	FROM Payments p
+	JOIN ClientReservations cr
+	ON cr.ClientReservationID = p.PaymentID
+	JOIN Clients c
+	ON c.ClientID = cr.ClientID
+	JOIN Conferences conf
+	ON conf.ConferenceID = cr.ConferenceID
+	WHERE p.FineAssessed < p.FinePaid AND cr.IsCancelled = 1
+GO
+```
+
+<br />
+**V_UnpayedNotCancelledReservations - ** przedstawia listę nieopłaconych ale wciąż aktywnych rezerwacji
+```sql
+CREATE VIEW V_UnpayedNotCancelledReservations
+AS
+	SELECT conf.ConferenceName, c.ClientName, (p.FineAssessed - p.FinePaid) as Difference
+	FROM Payments p
+	JOIN ClientReservations cr
+	ON cr.ClientReservationID = p.PaymentID
+	JOIN Clients c
+	ON c.ClientID = cr.ClientID
+	JOIN Conferences conf
+	ON conf.ConferenceID = cr.ConferenceID
+	WHERE p.FineAssessed < p.FinePaid AND cr.IsCancelled = 0
+GO
+```
+
+<br />
+**V_OverPayedReservations - ** przedstawia listę wszystkich rezerwacji, które zostały opłacone z nadmiarem
+```sql
+CREATE VIEW V_OverPayedReservations
+AS
+	SELECT conf.ConferenceName, c.ClientName, (p.FinePaid - p.FineAssessed) as Difference
+	FROM Payments p
+	JOIN ClientReservations cr
+	ON cr.ClientReservationID = p.PaymentID
+	JOIN Clients c
+	ON c.ClientID = cr.ClientID
+	JOIN Conferences conf
+	ON conf.ConferenceID = cr.ConferenceID
+	WHERE p.FinePaid > p.FineAssessed
+GO
+```
+
+<br />
+**V_PayedReservations - ** przedstawia listę opłaconych, przed rozpoczęciem konferencji, rezerwacji
+```sql
+CREATE VIEW V_PayedReservations
+AS
+	SELECT conf.ConferenceName, c.ClientName
+	FROM Payments p
+	JOIN ClientReservations cr
+	ON cr.ClientReservationID = p.PaymentID
+	JOIN Clients c
+	ON c.ClientID = cr.ClientID
+	JOIN Conferences conf
+	ON conf.ConferenceID = cr.ConferenceID
+	WHERE p.FinePaid = p.FineAssessed AND conf.StartDate > CONVERT(date, GETDATE())
+GO
+```
+
+<br />
+**V_CancelledConferencesReseravtions - ** przedstawia listę anulowanych rezerwacji na konferencje
+```sql
+CREATE VIEW V_CancelledConferencesReseravtions
+AS
+	SELECT c.ClientID, c.ClientName, c.ClientSurname, conf.ConferenceID, conf.ConferenceName 
+	FROM Clients AS c
+	INNER JOIN ClientReservations AS cr
+		ON c.ClientID = cr.ClientID
+	INNER JOIN Conferences AS conf
+		ON cr.ConferenceID = conf.ConferenceID
+	WHERE cr.IsCancelled = 1
+GO
+```
+
+<br />
+**V_ClientsList - ** przedstawia liste wszystkich klientów, którzy kiedykolwiek rejestrowali się na jakąkolwiek konferencje
+```sql
+CREATE VIEW V_ClientsList
+AS
+	SELECT ClientID,
+		   IIF(IsPrivate = 0, ClientName, ClientName + ' ' + ClientSurname) as Name,
+		   PhoneNumber,
+		   Email,
+		   Address,
+		   City,
+		   PostalCode,
+		   Country
+	FROM Clients
+GO
+```
+
+#Indeksy
+<p>Podczas tworzenia indeksów staraliśmy się wybrać te atrybuty, które bardzo często są wykorzystywane do zanjdowania informacji w procedurach, funkcjach, widokach i triggerach. Są to przeważnie Identyfikatory relacji. </p>
+```sql 
+CREATE INDEX I_Clients ON Clients (ClientID)```
+```sql
+CREATE INDEX I_ClientReservations ON ClientReservations (ClientReservationID)```
+```sql
+CREATE INDEX I_Payments ON Payments (PaymentID)```
+```sql
+CREATE INDEX I_Participants ON Participants (ParticipantID)```
+```sql
+CREATE INDEX I_PriceList ON PriceList (PriceID)```
+```sql
+CREATE INDEX I_Conferences ON Conferences (ConferenceID)```
+```sql
+CREATE INDEX I_Workshops ON Workshops (WorkshopID)```
+```sql
+CREATE INDEX I_DaysReservations ON DaysReservations (DayReservationID)```
+```sql
+CREATE INDEX I_WorkshopsReservations ON WorkshopsReservations (WorkshopReservationID)```
+```sql
+CREATE INDEX I_ParticipantEmail ON Participants (Email)```
+```sql
+CREATE INDEX I_ClientEmail ON Clients (Email)```
+
+# Role
+Tworzona przez nas baza danych przewiduje następujące role w systemie:
+* Administrator - osoba znająca język SQL, będzie mogła dalej rozwijać stworzoną przez nas bazę danych. Będzie również miała nieograniczone uprawnienia.
+* Pracownik - osoba odpowiedzialna za wprowadzanie wszelkich danych do bazy takich jak: konferencje, warsztaty, progi cenowe, rezerwacje, klienci, uczestnicy. Posiada dostęp do wszystkich procedur, funkcji i widoków. Jej zadaniem jest również pomoc klientom i uczestnikom w rezerwacji miejsc w przypadku kiedy wspomniane osoby mają problem z rezerwacją przez internet.
+* Klient - będzie posiadał możliwość rezerwacji miejsc na konferencje i warsztatym ich zmiany oraz dodawania uczestników do sytemu. Dostęp do:
+	* Procedur:
+		* AddParticipant
+		* AddParticipantForConferenceDay
+		* AddParticipantForWorkshop
+		* AddReservationForConference
+		* AddReservationForConferenceDay
+		* AddReservationForWorkshop
+		* CancelConferenceReservation
+		* CancelParticipantReservation
+		* CancelDayReservation
+		* CancelParticipantWorkshopReservation
+		* CancelWorkshopReservation
+		* ChangeDayReservationPlaces
+		* ChangeWorkshopReservationPlaces
+		* CheckCurrentPayment
+	* Funkcji:
+		* AllPaymentsByClientID (ClientID to ID Klienta automatycznie przekazywane do funkcji)
+		* ClientReservationHistory
+		* FreeAndReservedPlacesForConference (tylko dla konferencji, na które klient jest już zarejestrowany)
+		* FreeAndReservedPlacesForWorkshop (tylko dla warsztatów odbywających się w ramach konferencji, na które klient jest już zarejestrowany)
+		* NonregulatedPaymentsByClientID - (ClientID to ID Klienta automatycznie przekazywane do funkcji)
+		* RegulatedPaymentsByClientID - (ClientID to ID Klienta automatycznie przekazywane do funkcji)
+		* ShowPrices
+		* ShowWorkshops
+		* GetCurrentPrice
+* Uczestnik - będzie posiadał możliwość wpisania się na dany dzień konferencji lub na dany warsztat, a także anulowania tychże wpisów. Dostęp do:
+	* Procedur:
+		* AddParticipantForConferenceDay
+		* AddParticipantForWorkshop
+		* CancelParticipantReservation
+		* CancelParticipantWorkshopReservation
+	* Funkcji:
+		* ShowWorkshops
+		* FreeAndReservedPlacesForConference
+		* FreeAndReservedPlacesForWorkshop
+
+#Generator danych
+* Dane dla tabel Clients, Participants oraz Conferences zostały wygenerowane przy pomocy strony internetowej https://mockaroo.com/
+* Dane dla tabeli PriceList zostały wygenerowane przy użyciu napisanego przez nas krótkiego polecenia SQL, korzystającego z wcześniej uzupełnionych danych w w/w tabelach
+
+```sql
+-- wstawiwanie danych do PriceList
+DECLARE @Iterator	INT 
+	 = 1
+
+DECLARE @PriceValue MONEY
+	= 50
+
+DECLARE @FirstDate	DATE
+DECLARE @SecondDate	DATE
+DECLARE @ThirdDate	DATE
+
+DECLARE @ConferenceDate	DATE
+
+
+WHILE @Iterator IN
+	(
+		SELECT ConferenceID
+		FROM dbo.Conferences
+	)
+BEGIN	
+	
+	SET @ConferenceDate =
+		(
+			SELECT StartDate
+			FROM dbo.Conferences
+			WHERE ConferenceID = @Iterator
+		)
+	SET @FirstDate  = DATEADD(MONTH, -2, @ConferenceDate)
+	SET @SecondDate = DATEADD(MONTH, -1, @ConferenceDate)
+	SET @ThirdDate  = DATEADD(MONTH, -0, @ConferenceDate)
+
+	EXEC dbo.P_AddPriceToConferencePriceList @ConferenceID = @Iterator,			-- int
+	                                         @PriceValue   = @PriceValue,		-- money
+	                                         @PriceDate    = @FirstDate			-- date
+
+	SET @PriceValue = @PriceValue + 50
+
+	EXEC dbo.P_AddPriceToConferencePriceList @ConferenceID = @Iterator,        -- int
+	                                         @PriceValue = @PriceValue,        -- money
+	                                         @PriceDate = @SecondDate		   -- date
+	
+	SET @PriceValue = @PriceValue + 100
+
+	EXEC dbo.P_AddPriceToConferencePriceList @ConferenceID = @Iterator,        -- int
+	                                         @PriceValue = @PriceValue,        -- money
+	                                         @PriceDate = @ThirdDate -- date
+
+	SET @Iterator = @Iterator + 1
+	
+END
+GO
+    ```
+
+### Dane do reszty tabel - nie mam pojecia jak to zrobic na razie :x
