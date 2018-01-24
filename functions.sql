@@ -124,8 +124,8 @@ AS
 		SELECT c.ConferenceName,
 			   dr.ConferenceDay,
 			   c.Places,
-			   c.Places - SUM(dr.NormalReservations + dr.StudentsReservations) AS FreePlaces,
-			   SUM(dr.NormalReservations + dr.StudentsReservations) AS ReservedPlaces
+			   c.Places - ISNULL(SUM(dr.NormalReservations + dr.StudentsReservations), 0) AS FreePlaces,
+			   ISNULL(SUM(dr.NormalReservations + dr.StudentsReservations), 0) AS ReservedPlaces
 			   
 		FROM Conferences AS c
 		INNER JOIN  ClientReservations AS cr
