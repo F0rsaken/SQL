@@ -42,6 +42,7 @@
 	* T_DeleteFineAssesdAfterCancelingConferenceReservation
 	* T_CountFineAfterWorkhopReservationOrUpdate
 	* T_CountFineAfterConferenceDayReservationOrUpdate
+	* T_CreatePaymentField
 * Procedury
 	* P_AddClient
 	* P_AddConference
@@ -96,7 +97,7 @@
 	* Pracownik
 	* Klient
 	* Uczestnik 
-
+* Generator danych
 <p>
 
 
@@ -1141,6 +1142,49 @@ BEGIN
 
 	EXEC P_CountFine @ClientReservationID = @ClientReservationID;
 
+END
+GO
+```
+
+<br />
+**T_CreatePaymentField - ** tworzy wpis w tabeli Payments po rejestracji klienta na daną konferencję
+```sql
+CREATE TRIGGER T_CreatePaymentField
+	ON dbo.ClientReservations
+	AFTER INSERT
+AS
+BEGIN
+	
+	DECLARE @PaymentID	INT
+		= ( 
+				SELECT ClientReservationID
+				FROM Inserted
+		  )
+	
+	DECLARE @ReservationDate DATE
+		= (
+				SELECT ReservationDate 
+				FROM Inserted
+		  )
+
+	DECLARE @DueDate	DATE
+		= DATEADD(DAY, 7, @ReservationDate)
+
+
+	INSERT INTO dbo.Payments
+	(
+	    PaymentID,
+		FineAssessed,
+	    FinePaid,
+	    DueDate
+	)
+	VALUES
+	(   
+		@PaymentID,
+		0,     -- FineAssessed - money
+	    0,     -- FinePaid - money
+	    @DueDate -- DueDate - date
+	)
 END
 GO
 ```
@@ -2505,6 +2549,71 @@ Tworzona przez nas baza danych przewiduje następujące role w systemie:
 
 #Generator danych
 * Dane dla tabel Clients, Participants oraz Conferences zostały wygenerowane przy pomocy strony internetowej https://mockaroo.com/
+* Dane dla tabeli Workshops generuje skrypt
+
+```sql
+USE mmandows_a
+DECLARE @Iterator INT,
+    @DayIterator INT,
+    @WorkshopIterator INT,
+    @NumberOfDays INT,
+    @ConferenceDay INT,
+    @WorkshopStart TIME,
+    @WorkshopEnd TIME,
+    @Places INT,
+    @WorkshopFee MONEY
+
+SET @Iterator = 1
+
+WHILE @Iterator IN
+    (
+        SELECT ConferenceID
+        FROM dbo.Conferences
+    )
+BEGIN
+
+    SET @NumberOfDays = DATEDIFF(day, (
+        SELECT StartDate FROM Conferences WHERE ConferenceID = @Iterator
+    ), (
+        SELECT EndDate FROM Conferences WHERE ConferenceID = @Iterator
+    )) + 1
+
+    SET @DayIterator = 1
+
+    WHILE @DayIterator <= @NumberOfDays
+    BEGIN
+
+        SET @WorkshopStart = '8:00'
+        SET @WorkshopEnd = '10:00'
+        SET @WorkshopIterator = 0
+
+        WHILE @WorkshopIterator < 4
+        BEGIN
+            SET @Places = CONVERT(INT, RAND()*10 + 20)
+            SET @WorkshopFee = ROUND( CONVERT(MONEY, RAND()*20 + 20), 2)
+
+            EXEC P_AddWorkshop  @ConferenceID = @Iterator,
+                                @ConferenceDay = @DayIterator,
+                                @WorkshopName = 'A',
+                                @Places = @Places,
+                                @WorkshopFee = @WorkshopFee,
+                                @WorkshopStart = @WorkshopStart,
+                                @WorkshopEnd = @WorkshopEnd
+
+            SET @WorkshopStart = DATEADD (minute, 120, @WorkshopStart)
+            SET @WorkshopEnd = DATEADD (minute, 120, @WorkshopEnd)
+            SET @WorkshopIterator += 1
+        END
+
+        SET @DayIterator += 1
+    END
+
+    SET @Iterator += 1
+END
+GO
+```
+
+<br />
 * Dane dla tabeli PriceList zostały wygenerowane przy użyciu napisanego przez nas krótkiego polecenia SQL, korzystającego z wcześniej uzupełnionych danych w w/w tabelach
 
 ```sql
@@ -2560,5 +2669,307 @@ BEGIN
 END
 GO
     ```
+<br />
+* Dane do tabeli ClientReservations zostały wygenerowane przy użyciu poniższego krótkiego skryptu
 
-### Dane do reszty tabel - nie mam pojecia jak to zrobic na razie :x
+```sql
+DECLARE @i10 	int	
+	= 1
+
+DECLARE @clientID	INT
+	= 1
+
+DECLARE @confID	INT
+	= 1
+
+WHILE @confID IN 
+	(
+		SELECT ConferenceID 
+		FROM dbo.Conferences
+	)
+BEGIN
+		WHILE @i10 <= 10
+		BEGIN	
+
+			DECLARE @ConferenceStartDate	DATE
+				= (
+						SELECT	StartDate 
+						FROM dbo.Conferences
+						WHERE ConferenceID = @confID
+				  )
+
+			DECLARE @ReservationDate	DATE
+				= DATEADD(MONTH, -2, @ConferenceStartDate)
+
+			INSERT INTO dbo.ClientReservations
+			(
+				ConferenceID,
+				ClientID,
+				ReservationDate,
+				IsCancelled
+			)
+			VALUES
+			(   @confID,         -- ConferenceID - int
+				@clientID,         -- ClientID - int
+				@ReservationDate, -- ReservationDate - date
+				0 -- IsCancelled - bit
+			)
+
+			SET @clientID = @clientID + 1
+			SET @i10 = @i10 + 1	
+		END
+
+	SET @i10 = 1
+	SET @confID = @confID + 1
+
+END	
+GO
+```
+
+* Dane do tabeli Payments są generowane automatycznie przy dokonywaniu, anulowaniu lub zmianie ilości zarezerwowanych miejsc. Odpowiedzialna jest za to procedura 
+	* ``` P_CountFine ```
+    
+    oraz Triggery:
+    * ``` T_CountFineAfterConferenceDayReservationOrUpdate ```
+    * ``` T_CountFineAfterWorkhopReservationOrUpdate ```
+    * ``` T_CountFineAfterConferenceDayReservationOrUpdate ```
+
+* Dane do tabeli DaysReservations generuje skrypt
+
+```sql
+DECLARE @Iterator INT,
+    @NumberOfDays INT,
+    @ConferenceID INT,
+    @DayIterator INT,
+    @NormalRes INT,
+    @StudentRes INT
+
+SET @Iterator = 1
+
+WHILE @Iterator IN
+    (
+        SELECT ClientReservationID
+        FROM ClientReservations
+    )
+BEGIN
+
+    SET @ConferenceID = (
+        SELECT ConferenceID FROM ClientReservations WHERE ClientReservationID = @Iterator
+    )
+
+    SET @NumberOfDays = DATEDIFF(day, (
+        SELECT StartDate FROM Conferences WHERE ConferenceID = @ConferenceID
+    ), (
+        SELECT EndDate FROM Conferences WHERE ConferenceID = @ConferenceID
+    )) + 1
+    SET @DayIterator = 1
+    WHILE @DayIterator <= @NumberOfDays
+    BEGIN
+        SET @NormalRes = CONVERT(INT, RAND()*10 + 20)
+        SET @StudentRes = CONVERT(INT, RAND()*10 + 20)
+
+        EXEC P_AddReservationForConferenceDay
+            @ClientReservationID = @Iterator,
+            @ConferenceDay = @DayIterator,
+            @NormalReservations = @NormalRes,
+            @StudentReservations = @StudentRes
+
+
+        SET @DayIterator += 1
+    END
+
+    SET @Iterator += 1
+END
+GO
+```
+
+   <br />
+* Dane do tabeli WorkshopReservations generowane są przez skrypt
+
+```sql
+DECLARE @Iterator INT,
+    @WorkshopIterator INT,
+    @ConferenceID INT
+
+SET @Iterator = 1
+
+WHILE @Iterator IN
+    (
+        SELECT DayReservationID 
+        FROM DaysReservations
+    )
+BEGIN
+
+    SET @ConferenceID = (
+        SELECT ConferenceID
+        FROM ClienReservations cr
+        JOIN DaysReservations dr ON dr.ClientReservationID = cr.ClientReservationID
+        WHERE @Iterator = dr.DayReservationID
+    )
+    
+    SET @WorkshopIterator = (
+        SELECT TOP 1 WorkshopID
+        FROM Workshops
+        WHERE ConferenceID = @ConferenceID
+        ORDER BY WorkshopID
+    )
+
+    WHILE @WorkshopIterator IN
+        (
+            SELECT WorkshopID
+            FROM Workshops
+            WHERE ConferenceID = @ConferenceID
+        )
+    BEGIN
+        EXEC P_AddReservationForWorkshop
+            @DayReservationID = @Iterator,
+            @WorkshopID = @WorkshopIterator,
+            @NormalReservations = 10
+        
+        SET @WorkshopIterator += 1
+    END
+
+    SET @Iterator += 1
+
+END
+GO
+```
+    
+<br />
+* Dane do tabeli ParticipantReservations generuje skryp
+
+```sql
+DECLARE @PartID	INT
+	= 1
+DECLARE @DayID	INT
+	= 1
+DECLARE @NormalRes	INT
+	= 0
+DECLARE @StudentRes	INT
+	= 0
+DECLARE @StudentCard	INT
+
+WHILE @DayID IN
+	(
+		SELECT DayReservationID 
+		FROM dbo.DaysReservations
+	)
+BEGIN
+	
+	SET @NormalRes = 
+		(
+			SELECT NormalReservations
+			FROM dbo.DaysReservations
+			WHERE DayReservationID = @DayID
+		)
+	SET @StudentRes =
+		(
+			SELECT StudentsReservations
+			FROM dbo.DaysReservations
+			WHERE DayReservationID = @DayID
+		)
+
+	WHILE @NormalRes > 0
+	BEGIN
+
+		IF @PartID > 1000
+		BEGIN
+			SET @PartID = 1
+		END
+        
+		EXEC dbo.P_AddParticipantForConferenceDay @ParticipantID = @PartID,             -- int
+			                                          @DayReservationID = @DayID,          -- int
+			                                          @StudentCard = NULL,               -- int
+			                                          @StudentCardDate = NULL -- date
+		SET @PartID = @PartID +1
+		SET @NormalRes = @NormalRes - 1	
+	
+	END	
+
+	WHILE @StudentRes> 0
+	BEGIN
+
+		IF @PartID > 1000
+		BEGIN
+			SET @PartID = 1
+		END
+        
+		SET @StudentCard = RAND()*1000000
+		EXEC dbo.P_AddParticipantForConferenceDay @ParticipantID = @PartID,             -- int
+			                                          @DayReservationID = @DayID,          -- int
+			                                          @StudentCard = @StudentCard,               -- int
+			                                          @StudentCardDate = '2018-05-17' -- date
+		SET @PartID = @PartID +1
+		SET @StudentRes = @StudentRes - 1	
+	
+	END	
+
+
+	SET @DayID = @DayID + 1
+
+END
+GO
+```
+
+<br />
+* Dane do tabeli ParticipantWorkshops generuje skrypt
+
+```sql
+DECLARE @ParticipantReservationID1 INT,
+    @ParticipantReservationID2 INT,
+    @WorkshopID INT,
+    @DayReservationID INT
+
+SET @WorkshopID = 1
+
+WHILE @WorkshopID IN
+    (
+        SELECT WorkshopID
+        FROM Workshops
+    )
+BEGIN
+
+    SET @DayReservationID = (
+        SELECT TOP 1 DayReservationID
+        FROM WorkshopsReservations
+        WHERE WorkshopID = @WorkshopID
+        ORDER BY DayReservationID
+    )
+
+    WHILE @DayReservationID IN (
+        SELECT DayReservationID
+        FROM WorkshopsReservations
+        WHERE WorkshopID = @WorkshopID
+    )
+    BEGIN
+        SET @ParticipantReservationID1 = (
+            SELECT TOP 1 ParticipantReservationID
+            FROM ParticipantReservations
+            WHERE DayReservationID = @DayReservationID
+            ORDER BY ParticipantReservationID
+        )
+
+        SET @ParticipantReservationID2 = (
+            SELECT TOP 1 ParticipantReservationID
+            FROM ParticipantReservations
+            WHERE DayReservationID = @DayReservationID
+            ORDER BY ParticipantReservationID DESC
+        )
+
+        EXEC P_AddParticipantForWorkshop
+            @ParticipantReservationID = @ParticipantReservationID1,
+            @WorkshopID = @WorkshopID
+
+        EXEC P_AddParticipantForWorkshop
+            @ParticipantReservationID = @ParticipantReservationID2,
+            @WorkshopID = @WorkshopID
+
+        SET @DayReservationID += 1
+
+    END
+
+    SET @WorkshopID += 1
+
+END
+GO
+```
