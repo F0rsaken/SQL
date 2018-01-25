@@ -98,6 +98,7 @@
 	* Klient
 	* Uczestnik 
 * Generator danych
+
 <p>
 
 
@@ -165,22 +166,11 @@ Podczas analizowania wymagań systemu natknęliśmy się na kilka brzegowych syt
 * Anulowanie rezerwacji konferencji, anuluje rezerwacje dni, a anulowanie rezerwacji dni, rezerwacje wrsztatów
 * Przy robieniu rezerwacji na dzień, monitorowana jest ilość wolnych miejsc na ten dzień, podobnie dla rezerwacji warsztatu
 * Przy wpisywaniu konferencji sprawdzamy, czy data końca jest po dacie początku
-* Dla każdej konferencji podana jest cena zależna od daty, rpzy czym ze wzrostem daty następuje wzorst ceny
+* Dla każdej konferencji podana jest cena zależna od daty, przy czym ze wzrostem daty następuje wzorst ceny
 * Przy dodawaniu warsztatów, na odpowiedni dzień, sprawdzane jest, czy konferencja ma taki dzień
 * Przy rejestracji uczestnika na konferencje, sprawdzane jest, czy klient zrobił odpowednią rezerwację
 * Przy wpisie na warsztaty sprawdzane jest, czy istnieje rezerwacja na ten warsztat po stronie klienta
 * Przy rezerwacji klienta na warsztat, kontrolowana jest maksymalna liczba miejsc
-*
-*
-* przechowywanie informacji o statusie uczestnika tj. czy jest studentem czy też nie. Nr legitymacji studenckiej i jej datę ważności nalezy zawsze podać podczas zapisu uczestnika na dany dzień konferencji. Wyklucza to sytuację, w której osoba X kiedyś studiowała, ale obecnie już nie studiuje.
-* zmiana nazwy/tematu konferencji lub tematu warsztatu. Nie jest możliwe takie działanie. System nie pozwala na zmianę tematu konferencji lub tematu warsztatu. Mogłoby to spowodować duże zamieszanie, w sytuacji kiedy część uczestników dokonała już wpisu na jeden z warsztatów, po czym został zmieniony jego temat.
-* ilość miejsc na poszczególne dni konferencji. Zakładamy, że na każdy dzień konferencji dostępnych jest tyle samo miejsc. Informacja o dostępnych miejscach jest przechowywana w tabeli Conferences
-* liczba dostępnych miejsc na warsztat może być różna dla każdego warsztatu
-* nie ma możliwości zmiany wartości progu cenowego. W przypadku pomyłki można go jedynie usunąć, nie można naotmiast zmienić jego wartości
-* raz dodany klient lub uczestnik do bazy nie jest do niej wprowadzany ponownie przy rezerwacjach na kolejne konferencje
-* w przypadku anulowania przez klienta rezerwacji na konferencję, w sytuacji kiedy opłacił już zarezerwowane miejsca, wartość należnej opłaty w tabeli Payments zostaje ustawiona na 0, a sama nadpłata zwracana jest klientowi
-* system raz dziennie sprawdza czy są rezerwacje, które nie zostały opłacone w terminie. Jeżeli takowe są anuluje je. Całe działanie wykonuje procedura ```P_CancelUnpaiedReservation```
-* opłata należna za zarezerwowane miejsca na konferencję i warsztaty wyliczana jest systematycznie, przy dokonaniu rezerwacji na konferencję, warsztat, ich modyfikacji oraz anulowaniu
 
 #Tabele
 <h6>
