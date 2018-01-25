@@ -157,6 +157,21 @@ uczestnicy mogą rejestrować się na dowolne z tych dni.
 
 #Specyfikacja wymagań
 Podczas analizowania wymagań systemu natknęliśmy się na kilka brzegowych sytuacji. Poniżej przedstawiamy je wraz z ich rozwiązaniem.
+* Dodawani klinci mogą być prywatni lub nie, odpowiada za to pole isPrivate oraz brak nazwiska
+* Klienci są unikalni, rozróżniani za pomocą adresu email
+* Klient może zrobić jedną rezerwacje na jedną konferencje, gdyby potrzebował więcej miejsc, może po prostu zwiększyć ich ilość, lub całkowicie anulować rezerwacje i zrobić ją na nowo
+* Opłaty klienta są wyliczane automatycznie w momencie zrobienia rezerwacji, lub jakiejkolwiek jej aktualizacji
+* Codziennie uruchamiana jest procedura sprawdzająca, czy klienci zapłacili w czasie, jeżeli nie, ich rezerwacja jest anulowana
+* Anulowanie rezerwacji konferencji, anuluje rezerwacje dni, a anulowanie rezerwacji dni, rezerwacje wrsztatów
+* Przy robieniu rezerwacji na dzień, monitorowana jest ilość wolnych miejsc na ten dzień, podobnie dla rezerwacji warsztatu
+* Przy wpisywaniu konferencji sprawdzamy, czy data końca jest po dacie początku
+* Dla każdej konferencji podana jest cena zależna od daty, rpzy czym ze wzrostem daty następuje wzorst ceny
+* Przy dodawaniu warsztatów, na odpowiedni dzień, sprawdzane jest, czy konferencja ma taki dzień
+* Przy rejestracji uczestnika na konferencje, sprawdzane jest, czy klient zrobił odpowednią rezerwację
+* Przy wpisie na warsztaty sprawdzane jest, czy istnieje rezerwacja na ten warsztat po stronie klienta
+* Przy rezerwacji klienta na warsztat, kontrolowana jest maksymalna liczba miejsc
+*
+*
 * przechowywanie informacji o statusie uczestnika tj. czy jest studentem czy też nie. Nr legitymacji studenckiej i jej datę ważności nalezy zawsze podać podczas zapisu uczestnika na dany dzień konferencji. Wyklucza to sytuację, w której osoba X kiedyś studiowała, ale obecnie już nie studiuje.
 * zmiana nazwy/tematu konferencji lub tematu warsztatu. Nie jest możliwe takie działanie. System nie pozwala na zmianę tematu konferencji lub tematu warsztatu. Mogłoby to spowodować duże zamieszanie, w sytuacji kiedy część uczestników dokonała już wpisu na jeden z warsztatów, po czym został zmieniony jego temat.
 * ilość miejsc na poszczególne dni konferencji. Zakładamy, że na każdy dzień konferencji dostępnych jest tyle samo miejsc. Informacja o dostępnych miejscach jest przechowywana w tabeli Conferences
